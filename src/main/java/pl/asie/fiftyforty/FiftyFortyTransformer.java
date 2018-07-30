@@ -60,7 +60,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 					"getSlotLimit");
 		});
 
-		if (transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
+		if (FiftyForty.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "onExtract");
 			});
@@ -195,6 +195,8 @@ public class FiftyFortyTransformer implements IClassTransformer {
 
 		for (MethodNode mn : node.methods) {
 			if (methodSet.contains(mn.name)) {
+				int patchesMade = 0;
+
 				ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
 				while (it.hasNext()) {
 					AbstractInsnNode in = it.next();
@@ -206,8 +208,13 @@ public class FiftyFortyTransformer implements IClassTransformer {
 							it.set(new MethodInsnNode(
 									Opcodes.INVOKESTATIC, "pl/asie/fiftyforty/FiftyFortyHelpers", "getMaxStackSize", "()I", false
 							));
+							patchesMade++;
 						}
 					}
+				}
+
+				if (patchesMade > 1) {
+					System.out.println("NOTE: Made " + patchesMade + " patches in " + node.name + " -> " + mn.name + "!");
 				}
 			}
 		}

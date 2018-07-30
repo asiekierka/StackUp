@@ -31,26 +31,24 @@ import java.io.File;
 @Mod(
 		modid = "fiftyforty",
 		name = "5040",
-		version = "@VERSION@"
+		version = "@VERSION@",
+		dependencies = "before:refinedstorage"
 )
 public class FiftyForty {
 	static int maxStackSize = 64;
+	static boolean patchRefinedStorage = true;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(new File(new File("config"), "fiftyforty.cfg"));
 
 		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, Integer.MAX_VALUE, "The maximum stack size for new stacks.");
+		patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
 
 		if (config.hasChanged()) {
 			config.save();
 		}
 
 		Items.AIR.setMaxStackSize(maxStackSize);
-	}
-
-	@Mod.EventHandler
-	public void init(FMLInitializationEvent event) {
-		Items.REDSTONE.setMaxStackSize(256);
 	}
 }
