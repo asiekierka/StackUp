@@ -69,7 +69,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node,
 						"getItemStackLimit", "func_178170_b",
-						"getSlotStackLimit", "func_77639_j");
+						"getSlotStackLimit", "func_75219_a");
 			});
 		}
 
