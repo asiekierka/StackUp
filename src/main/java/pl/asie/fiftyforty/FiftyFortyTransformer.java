@@ -53,41 +53,51 @@ public class FiftyFortyTransformer implements IClassTransformer {
 		Consumer<ClassNode> consumer = (n) -> {};
 		Consumer<ClassNode> emptyConsumer = consumer;
 
-		consumer = consumer.andThen((node) -> {
-			patchMaxLimit(node, "getInventoryStackLimit", "func_70297_j_",
-					"getItemStackLimit", "func_178170_b",
-					"getSlotStackLimit", "func_77639_j",
-					"getSlotLimit");
-		});
+		if (FiftyFortyClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory")) {
+			consumer = consumer.andThen((node) -> {
+				patchMaxLimit(node, "getInventoryStackLimit", "func_70297_j_");
+			});
+		}
+
+		if (FiftyFortyClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
+			consumer = consumer.andThen((node) -> {
+				patchMaxLimit(node, "getSlotLimit");
+			});
+		}
+
+		if (FiftyFortyClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot")) {
+			consumer = consumer.andThen((node) -> {
+				patchMaxLimit(node,
+						"getItemStackLimit", "func_178170_b",
+						"getSlotStackLimit", "func_77639_j");
+			});
+		}
 
 		if (FiftyForty.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "onExtract");
 			});
-		}
-
-		if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
+		} else if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.fiftyforty.splices.RenderEntityItemPatch",
 						"getModelCount", "func_177078_a");
 			});
-		}
-
-		if ("net.minecraft.util.ServerRecipeBookHelper".equals(transformedName)) {
+		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName)) {
+			consumer = consumer.andThen((node) -> {
+				spliceClasses(node, "pl.asie.fiftyforty.splices.InventoryHelperPerformancePatch",
+						"spawnItemStack", "func_180173_a");
+			});
+		} else if ("net.minecraft.util.ServerRecipeBookHelper".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "func_194324_a");
 			});
-		}
-
-		if ("net.minecraft.network.PacketBuffer".equals(transformedName)) {
+		} else if ("net.minecraft.network.PacketBuffer".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.fiftyforty.splices.PacketBufferWriters",
 						"readItemStack", "func_150791_c",
 						"writeItemStack", "func_150788_a");
 			});
-		}
-
-		if ("net.minecraft.client.renderer.RenderItem".equals(transformedName)) {
+		} else if ("net.minecraft.client.renderer.RenderItem".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("renderItemOverlayIntoGUI".equals(mn.name)
@@ -115,9 +125,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 					}
 				}
 			});
-		}
-
-		if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
+		} else if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("processCreativeInventoryAction".equals(mn.name)
@@ -145,9 +153,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 					}
 				}
 			});
-		}
-
-		if ("net.minecraft.item.ItemStack".equals(transformedName)) {
+		} else if ("net.minecraft.item.ItemStack".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("<init>".equals(mn.name)) {
