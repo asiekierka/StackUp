@@ -1,0 +1,105 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "gradle.plugin.net.minecrell:licenser:0.3"
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecrell.licenser'
+
+version = "0.1.0"
+group = "pl.asie.fiftyforty"
+archivesBaseName = "5040"
+
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+if (System.getenv("BUILD_NUMBER") != null)
+    version += ".${System.getenv("BUILD_NUMBER")}"
+
+configurations {
+    deploy
+}
+
+dependencies {
+    deploy 'org.apache.maven.wagon:wagon-ssh:2.10'
+}
+
+minecraft {
+    version = "1.12.2-14.23.4.2745"
+    runDir = "run"
+    
+    mappings = "snapshot_20180730"
+
+    replace '@VERSION@', project.version
+    replace '@MC_VERSION@', version
+}
+
+repositories {
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs += 'docs'
+        }
+    }
+}
+
+license {
+    sourceSets = [project.sourceSets.main]
+    header = project.file("docs/licenses/LICENSE")
+    ignoreFailures = true
+    exclude '**/*.lang'
+    exclude '**/*.info'
+    exclude '**/*.mcmeta'
+}
+
+dependencies {
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest.attributes "Manifest-Version": "1.0"
+    manifest.attributes "FMLCorePlugin": "pl.asie.fiftyforty.FiftyFortyCore"
+}
+
+if (file('private.gradle').exists()) {
+	apply from: 'private.gradle'
+}
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+
+    keyStore = project.keyStore
+    alias = project.keyStoreAlias
+    storePass = project.keyStorePass
+    keyPass = project.keyStoreKeyPass
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+build.dependsOn(signJar)

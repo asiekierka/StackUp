@@ -1,0 +1,17 @@
+{
+    "modListVersion": 2,
+    "modList": [
+        {
+            "modid": "fiftyforty",
+            "name": "5040",
+            "version": "${version}",
+            "mcversion": "${mcversion}",
+            "description": "Because 64 just wasn't enough",
+            "authorList": [
+                "asiekierka"
+            ],
+            "url": "http://charset.asie.pl",
+            "updateUrl": "http://asie.pl/files/minecraft/update/fiftyforty.json"
+        }
+    ]
+}
