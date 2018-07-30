@@ -87,6 +87,36 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			});
 		}
 
+		if ("net.minecraft.client.renderer.RenderItem".equals(transformedName)) {
+			consumer = consumer.andThen((node) -> {
+				for (MethodNode mn : node.methods) {
+					if ("renderItemOverlayIntoGUI".equals(mn.name)
+							|| "func_180453_a".equals(mn.name)) {
+						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
+						while (it.hasNext()) {
+							AbstractInsnNode in = it.next();
+							//     INVOKEVIRTUAL net/minecraft/client/gui/FontRenderer.drawStringWithShadow (Ljava/lang/String;FFI)I
+							if (in.getOpcode() == Opcodes.INVOKEVIRTUAL) {
+								MethodInsnNode min = (MethodInsnNode) in;
+								if (min.owner.equals("net/minecraft/client/gui/FontRenderer")
+										&& min.desc.equals("(Ljava/lang/String;FFI)I")) {
+									it.set(new MethodInsnNode(
+											Opcodes.INVOKESTATIC,
+											"pl/asie/fiftyforty/FiftyFortyHelpers",
+											"drawItemCountWithShadow",
+											"(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;FFI)I",
+											false
+									));
+									System.out.println("Patched item count render in RenderItem!");
+									break;
+								}
+							}
+						}
+					}
+				}
+			});
+		}
+
 		if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {

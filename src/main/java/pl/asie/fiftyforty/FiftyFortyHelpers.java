@@ -19,9 +19,28 @@
 
 package pl.asie.fiftyforty;
 
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.GlStateManager;
+
 public final class FiftyFortyHelpers {
 	private FiftyFortyHelpers() {
 
+	}
+
+	public static int drawItemCountWithShadow(FontRenderer fr, String text, float x, float y, int color) {
+		if (text.length() <= FiftyForty.getFontScaleLevel()) {
+			return fr.drawStringWithShadow(text, x, y, color);
+		}
+
+		GlStateManager.pushMatrix();
+		GlStateManager.scale(0.5f, 0.5f, 1f);
+		x *= 2;
+		y *= 2;
+		x += fr.getStringWidth(text) - 2;
+		y += 6;
+		int i = fr.drawStringWithShadow(text, x, y, color);
+		GlStateManager.popMatrix();
+		return i;
 	}
 
 	public static int getMaxStackSize() {

@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
 
 public class RenderEntityItemPatch extends RenderEntityItem {
 	public RenderEntityItemPatch(RenderManager renderManagerIn, RenderItem p_i46167_2_) {
@@ -30,16 +31,11 @@ public class RenderEntityItemPatch extends RenderEntityItem {
 	}
 
 	@Override
-	protected int getModelCount(ItemStack stack)
-	{
-		int i = 1;
-
-		if (stack.getCount() > 16) {
-			i = (stack.getCount() / 16) + 2;
-		} else if (stack.getCount() > 1) {
-			i = 2;
+	protected int getModelCount(ItemStack stack) {
+		if (stack.getCount() > 2) {
+			return MathHelper.log2DeBruijn(stack.getCount());
+		} else {
+			return stack.getCount();
 		}
-
-		return i;
 	}
 }

@@ -37,18 +37,29 @@ import java.io.File;
 public class FiftyForty {
 	static int maxStackSize = 64;
 	static boolean patchRefinedStorage = true;
+	private static int fontScaleLevel = -1;
+
+	public static int getFontScaleLevel() {
+		if (fontScaleLevel >= 0) {
+			return fontScaleLevel;
+		} else {
+			return maxStackSize > 999 ? 2 : 3;
+		}
+	}
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(new File(new File("config"), "fiftyforty.cfg"));
 
-		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, Integer.MAX_VALUE, "The maximum stack size for new stacks.");
+		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
 		patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
+		fontScaleLevel = config.getInt("fontScaleLevel", "client", -1, -1, 3, "Above how many digits should the font be scaled down? -1 sets default (2 if maxStackSize > 999, 3 otherwise). Set 0 to have the text be permanently scaled down.");
 
 		if (config.hasChanged()) {
 			config.save();
 		}
 
 		Items.AIR.setMaxStackSize(maxStackSize);
+		Items.REDSTONE.setMaxStackSize(9999);
 	}
 }
