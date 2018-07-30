@@ -83,6 +83,7 @@ processResources {
 jar {
     manifest.attributes "Manifest-Version": "1.0"
     manifest.attributes "FMLCorePlugin": "pl.asie.fiftyforty.FiftyFortyCore"
+    manifest.attributes "FMLCorePluginContainsFMLMod": "true"
 }
 
 if (file('private.gradle').exists()) {

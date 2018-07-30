@@ -49,6 +49,8 @@ public class FiftyFortyTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass) {
+		transformedName = transformedName.replace('/', '.');
+
 		byte[] data = basicClass;
 		Consumer<ClassNode> consumer = (n) -> {};
 		Consumer<ClassNode> emptyConsumer = consumer;
