@@ -25,12 +25,12 @@ import net.minecraft.client.settings.GameSettings;
 
 public class ProxyClient extends ProxyCommon {
 	@Override
-	public boolean forceSmallTooltip() {
-		ScaledResolution resolution = new ScaledResolution(Minecraft.getMinecraft());
-		if (resolution.getScaleFactor() <= 1) {
-			return true;
-		}
+	public int getScaleFactor() {
+		return new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
+	}
 
-		return super.forceSmallTooltip();
+	@Override
+	public boolean forceSmallTooltip() {
+		return getScaleFactor() <= 1 || super.forceSmallTooltip();
 	}
 }

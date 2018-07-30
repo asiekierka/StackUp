@@ -23,4 +23,8 @@ public class ProxyCommon {
 	public boolean forceSmallTooltip() {
 		return false;
 	}
+
+	public int getScaleFactor() {
+		return 2;
+	}
 }

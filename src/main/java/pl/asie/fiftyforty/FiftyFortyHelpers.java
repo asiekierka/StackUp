@@ -19,10 +19,13 @@
 
 package pl.asie.fiftyforty;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
@@ -75,7 +78,19 @@ public final class FiftyFortyHelpers {
 		y *= 2;
 		x = x + 32 - fr.getStringWidth(text);
 		y += 6;
+
+		int scaleFactor = FiftyForty.proxy.getScaleFactor();
+		if ((scaleFactor & 1) == 1) {
+			float difference = (scaleFactor - 1) / (float) scaleFactor;
+
+			GlStateManager.translate(x, y, 0);
+			GlStateManager.scale(difference, difference, 1f);
+			x = fr.getStringWidth(text) / 2f;
+			y = 3;
+		}
+
 		int i = fr.drawStringWithShadow(text, x, y, color);
+
 		GlStateManager.popMatrix();
 		return i;
 	}
