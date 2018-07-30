@@ -1,30 +1,29 @@
 /*
  * Copyright (c) 2018 Adrian Siekierka
  *
- * This file is part of FiftyForty.
+ * This file is part of StackUp.
  *
- * FiftyForty is free software: you can redistribute it and/or modify
+ * StackUp is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * FiftyForty is distributed in the hope that it will be useful,
+ * StackUp is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with FiftyForty.  If not, see <http://www.gnu.org/licenses/>.
+ * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.fiftyforty.splices;
+package pl.asie.stackup.splices;
 
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import pl.asie.fiftyforty.FiftyFortyHelpers;
+import pl.asie.stackup.StackUpHelpers;
 
 public class RenderEntityItemPatch extends RenderEntityItem {
 	public RenderEntityItemPatch(RenderManager renderManagerIn, RenderItem p_i46167_2_) {
@@ -33,6 +32,6 @@ public class RenderEntityItemPatch extends RenderEntityItem {
 
 	@Override
 	protected int getModelCount(ItemStack stack) {
-		return FiftyFortyHelpers.getModelCount(stack);
+		return StackUpHelpers.getModelCount(stack);
 	}
 }

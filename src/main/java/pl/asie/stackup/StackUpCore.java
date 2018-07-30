@@ -1,43 +1,38 @@
 /*
  * Copyright (c) 2018 Adrian Siekierka
  *
- * This file is part of FiftyForty.
+ * This file is part of StackUp.
  *
- * FiftyForty is free software: you can redistribute it and/or modify
+ * StackUp is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * FiftyForty is distributed in the hope that it will be useful,
+ * StackUp is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with FiftyForty.  If not, see <http://www.gnu.org/licenses/>.
+ * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.fiftyforty;
+package pl.asie.stackup;
 
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-@IFMLLoadingPlugin.Name("FiftyFortyCore")
+@IFMLLoadingPlugin.Name("StackUpCore")
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.SortingIndex(1001)
-@IFMLLoadingPlugin.TransformerExclusions("pl.asie.fiftyforty")
-public class FiftyFortyCore implements IFMLLoadingPlugin {
+@IFMLLoadingPlugin.TransformerExclusions("pl.asie.stackup")
+public class StackUpCore implements IFMLLoadingPlugin {
 	@Override
 	public String[] getASMTransformerClass() {
 		return new String[] {
-				"pl.asie.fiftyforty.FiftyFortyTransformer"
+				"pl.asie.stackup.StackUpTransformer"
 		};
 	}
 
@@ -54,6 +49,7 @@ public class FiftyFortyCore implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> data) {
+		StackUpHelpers.coremodUp = true;
 	}
 
 	@Override

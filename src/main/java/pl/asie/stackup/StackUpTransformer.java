@@ -1,23 +1,23 @@
 /*
  * Copyright (c) 2018 Adrian Siekierka
  *
- * This file is part of FiftyForty.
+ * This file is part of StackUp.
  *
- * FiftyForty is free software: you can redistribute it and/or modify
+ * StackUp is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * FiftyForty is distributed in the hope that it will be useful,
+ * StackUp is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with FiftyForty.  If not, see <http://www.gnu.org/licenses/>.
+ * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.fiftyforty;
+package pl.asie.stackup;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,7 +37,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class FiftyFortyTransformer implements IClassTransformer {
+public class StackUpTransformer implements IClassTransformer {
 	public boolean hasClass(String s) {
 		try {
 			Class.forName(s);
@@ -55,19 +55,19 @@ public class FiftyFortyTransformer implements IClassTransformer {
 		Consumer<ClassNode> consumer = (n) -> {};
 		Consumer<ClassNode> emptyConsumer = consumer;
 
-		if (FiftyFortyClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory")) {
+		if (StackUpClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "getInventoryStackLimit", "func_70297_j_");
 			});
 		}
 
-		if (FiftyFortyClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
+		if (StackUpClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "getSlotLimit");
 			});
 		}
 
-		if (FiftyFortyClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot")) {
+		if (StackUpClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node,
 						"getItemStackLimit", "func_178170_b",
@@ -75,13 +75,13 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			});
 		}
 
-		if (FiftyForty.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
+		if (StackUp.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "onExtract");
 			});
 		} else if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.fiftyforty.splices.RenderEntityItemPatch",
+				spliceClasses(node, "pl.asie.stackup.splices.RenderEntityItemPatch",
 						"getModelCount", "func_177078_a");
 
 				for (MethodNode mn : node.methods) {
@@ -105,7 +105,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 									));
 									it.add(new MethodInsnNode(
 											Opcodes.INVOKESTATIC,
-											"pl/asie/fiftyforty/FiftyFortyHelpers",
+											"pl/asie/stackup/StackUpHelpers",
 											isNegative ? "getItemRenderDistanceNeg" : "getItemRenderDistance",
 											"(Lnet/minecraft/entity/item/EntityItem;)F",
 											false
@@ -119,7 +119,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			});
 		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.fiftyforty.splices.InventoryHelperPerformancePatch",
+				spliceClasses(node, "pl.asie.stackup.splices.InventoryHelperPerformancePatch",
 						"spawnItemStack", "func_180173_a");
 			});
 		} else if ("net.minecraft.util.ServerRecipeBookHelper".equals(transformedName)) {
@@ -128,7 +128,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			});
 		} else if ("net.minecraft.network.PacketBuffer".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.fiftyforty.splices.PacketBufferWriters",
+				spliceClasses(node, "pl.asie.stackup.splices.PacketBufferWriters",
 						"readItemStack", "func_150791_c",
 						"writeItemStack", "func_150788_a");
 			});
@@ -147,7 +147,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 										&& min.desc.equals("(Ljava/lang/String;FFI)I")) {
 									it.set(new MethodInsnNode(
 											Opcodes.INVOKESTATIC,
-											"pl/asie/fiftyforty/FiftyFortyHelpers",
+											"pl/asie/stackup/StackUpHelpers",
 											"drawItemCountWithShadow",
 											"(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;FFI)I",
 											false
@@ -178,7 +178,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 										if (intInsnNode.operand == 64) {
 											System.out.println("Patched processCreativeInventoryAction count check!");
 											it.set(new MethodInsnNode(
-													Opcodes.INVOKESTATIC, "pl/asie/fiftyforty/FiftyFortyHelpers", "getMaxStackSize", "()I", false
+													Opcodes.INVOKESTATIC, "pl/asie/stackup/StackUpHelpers", "getMaxStackSize", "()I", false
 											));
 										}
 									}
@@ -275,9 +275,9 @@ public class FiftyFortyTransformer implements IClassTransformer {
 						IntInsnNode iin = (IntInsnNode) in;
 						if (iin.operand == 64) {
 							System.out.println("Patched max stack check in " + node.name + " -> " + mn.name + "!");
-							//    INVOKESTATIC pl/asie/fiftyforty/FiftyFortyHelpers.getMaxStackSize ()I
+							//    INVOKESTATIC pl/asie/stackup/StackUpHelpers.getMaxStackSize ()I
 							it.set(new MethodInsnNode(
-									Opcodes.INVOKESTATIC, "pl/asie/fiftyforty/FiftyFortyHelpers", "getMaxStackSize", "()I", false
+									Opcodes.INVOKESTATIC, "pl/asie/stackup/StackUpHelpers", "getMaxStackSize", "()I", false
 							));
 							patchesMade++;
 						}
@@ -312,7 +312,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 	}
 
 	public static ClassNode spliceClasses(final ClassNode data, final String className, final String... methods) {
-		try (InputStream stream = FiftyFortyCore.class.getClassLoader().getResourceAsStream(className.replace('.', '/') + ".class")) {
+		try (InputStream stream = StackUpCore.class.getClassLoader().getResourceAsStream(className.replace('.', '/') + ".class")) {
 			return spliceClasses(data, ByteStreams.toByteArray(stream), className, methods);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -373,7 +373,7 @@ public class FiftyFortyTransformer implements IClassTransformer {
 							}
 						}
 
-						oldMn.name = methodList.get((methodList.indexOf(oldMn.name)) & (~1)) + "_fiftyforty_old";
+						oldMn.name = methodList.get((methodList.indexOf(oldMn.name)) & (~1)) + "_stackup_old";
 						nodeData.methods.add(oldMn);
 						added = true;
 						break;

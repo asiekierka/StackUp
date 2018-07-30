@@ -2,8 +2,8 @@
     "modListVersion": 2,
     "modList": [
         {
-            "modid": "fiftyforty",
-            "name": "5040",
+            "modid": "stackup",
+            "name": "StackUp!",
             "version": "${version}",
             "mcversion": "${mcversion}",
             "description": "Because 64 just wasn't enough",
@@ -11,7 +11,7 @@
                 "asiekierka"
             ],
             "url": "http://charset.asie.pl",
-            "updateUrl": "http://asie.pl/files/minecraft/update/fiftyforty.json"
+            "updateUrl": "http://asie.pl/files/minecraft/update/stackup.json"
         }
     ]
 }

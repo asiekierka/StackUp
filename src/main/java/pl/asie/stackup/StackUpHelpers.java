@@ -1,39 +1,37 @@
 /*
  * Copyright (c) 2018 Adrian Siekierka
  *
- * This file is part of FiftyForty.
+ * This file is part of StackUp.
  *
- * FiftyForty is free software: you can redistribute it and/or modify
+ * StackUp is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * FiftyForty is distributed in the hope that it will be useful,
+ * StackUp is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with FiftyForty.  If not, see <http://www.gnu.org/licenses/>.
+ * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.fiftyforty;
+package pl.asie.stackup;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
 
-public final class FiftyFortyHelpers {
+public final class StackUpHelpers {
+	public static boolean coremodUp = false;
 	public static final Random RANDOM = new Random();
 
-	private FiftyFortyHelpers() {
+	private StackUpHelpers() {
 
 	}
 
@@ -64,10 +62,10 @@ public final class FiftyFortyHelpers {
 	public static int drawItemCountWithShadow(FontRenderer fr, String text, float x, float y, int color) {
 		x = x - 19 + 2 + fr.getStringWidth(text);
 
-		boolean forceSmall = FiftyForty.proxy.forceSmallTooltip();
-		text = FiftyForty.abbreviate(text, forceSmall);
+		boolean forceSmall = StackUp.proxy.forceSmallTooltip();
+		text = StackUp.abbreviate(text, forceSmall);
 
-		if (forceSmall || text.length() <= FiftyForty.getFontScaleLevel()) {
+		if (forceSmall || text.length() <= StackUp.getFontScaleLevel()) {
 			x += 19 - 2 - fr.getStringWidth(text);
 			return fr.drawStringWithShadow(text, x, y, color);
 		}
@@ -79,7 +77,7 @@ public final class FiftyFortyHelpers {
 		x = x + 32 - fr.getStringWidth(text);
 		y += 6;
 
-		int scaleFactor = FiftyForty.proxy.getScaleFactor();
+		int scaleFactor = StackUp.proxy.getScaleFactor();
 		if ((scaleFactor & 1) == 1) {
 			float difference = (scaleFactor - 1) / (float) scaleFactor;
 
@@ -97,6 +95,6 @@ public final class FiftyFortyHelpers {
 
 	@SuppressWarnings("unused")
 	public static int getMaxStackSize() {
-		return FiftyForty.maxStackSize;
+		return StackUp.maxStackSize;
 	}
 }
