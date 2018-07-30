@@ -64,6 +64,29 @@ public class FiftyForty {
 	}
 
 	public static String abbreviate(String count, boolean forceSmall) {
+		String oldString = count;
+
+		StringBuilder fmtCodes = new StringBuilder();
+		int fmtCodeCount = 0;
+		while (count.codePointAt(0) == 0xA7) {
+			fmtCodes.append(count, 0, 2);
+			fmtCodeCount++;
+			count = count.substring(2);
+		}
+
+		String newCount = abbreviateInner(count, forceSmall);
+		//noinspection StringEquality
+		if (newCount == count) {
+			return oldString;
+		} else if (fmtCodeCount == 0) {
+			return newCount;
+		} else {
+			fmtCodes.append(newCount);
+			return fmtCodes.toString();
+		}
+	}
+
+	private static String abbreviateInner(String count, boolean forceSmall) {
 		boolean smallAbbr = alwaysAbbreviate || forceSmall;
 		int maxLen = (smallAbbr ? 3 : 5);
 
@@ -71,7 +94,13 @@ public class FiftyForty {
 			return count;
 		}
 
-		int countI = Integer.parseInt(count);
+		int countI;
+		try {
+			countI = Integer.parseInt(count);
+		} catch (NumberFormatException e) {
+			return count;
+		}
+
 		if (smallAbbr) {
 			if (countI >= 1000 && countI <= 99999) {
 				count = (countI / 1000) + "k";
