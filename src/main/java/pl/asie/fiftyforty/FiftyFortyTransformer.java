@@ -81,6 +81,39 @@ public class FiftyFortyTransformer implements IClassTransformer {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.fiftyforty.splices.RenderEntityItemPatch",
 						"getModelCount", "func_177078_a");
+
+				for (MethodNode mn : node.methods) {
+					// LDC -0.09375
+					// v
+					// ALOAD 1
+					// INVOKESTATIC getItemRenderDistance(Lnet/minecraft/entity/item/EntityItem;)F
+					if ("doRender".equals(mn.name)
+							|| "func_76986_a".equals(mn.name)) {
+						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
+						while (it.hasNext()) {
+							AbstractInsnNode in = it.next();
+							if (in.getOpcode() == Opcodes.LDC) {
+								LdcInsnNode min = (LdcInsnNode) in;
+								if (min.cst instanceof Number
+										&& Math.abs(Math.abs(((Number) min.cst).floatValue()) - 0.09375F) < 0.001F) {
+									boolean isNegative = ((Number) min.cst).floatValue() < 0;
+
+									it.set(new VarInsnNode(
+											Opcodes.ALOAD, 1
+									));
+									it.add(new MethodInsnNode(
+											Opcodes.INVOKESTATIC,
+											"pl/asie/fiftyforty/FiftyFortyHelpers",
+											isNegative ? "getItemRenderDistanceNeg" : "getItemRenderDistance",
+											"(Lnet/minecraft/entity/item/EntityItem;)F",
+											false
+									));
+									System.out.println("Patched item render distance constant in RenderEntityItem!");
+								}
+							}
+						}
+					}
+				}
 			});
 		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {

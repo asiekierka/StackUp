@@ -35,10 +35,12 @@ import java.io.File;
 @Mod(
 		modid = "fiftyforty",
 		name = "5040",
-		version = "@VERSION@",
+		version = FiftyForty.VERSION,
 		dependencies = "before:refinedstorage"
 )
 public class FiftyForty {
+	static final String VERSION = "@VERSION@";
+
 	@SidedProxy(modId = "fiftyforty", clientSide = "pl.asie.fiftyforty.ProxyClient", serverSide = "pl.asie.fiftyforty.proxyCommon")
 	public static ProxyCommon proxy;
 
@@ -129,7 +131,15 @@ public class FiftyForty {
 		MinecraftForge.EVENT_BUS.register(this);
 
 		Items.AIR.setMaxStackSize(maxStackSize);
-		Items.REDSTONE.setMaxStackSize(65536);
-		Items.QUARTZ.setMaxStackSize(999999999);
+
+		//noinspection ConstantConditions
+		if (VERSION.equals("@VERSION@")) {
+			System.out.println("--      WARNING!      --");
+			System.out.println("5040 DEBUG MODE ENABLED!");
+			System.out.println("--      WARNING!      --");
+			Items.REDSTONE.setMaxStackSize(65536);
+			Items.DIAMOND.setMaxStackSize(1000000);
+			Items.QUARTZ.setMaxStackSize(999999999);
+		}
 	}
 }

@@ -21,6 +21,9 @@ package pl.asie.fiftyforty;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
 
@@ -31,6 +34,30 @@ public final class FiftyFortyHelpers {
 
 	}
 
+	public static int getModelCount(ItemStack stack) {
+		if (stack.getCount() > 2) {
+			return MathHelper.log2DeBruijn(stack.getCount());
+		} else {
+			return stack.getCount();
+		}
+	}
+
+	@SuppressWarnings("unused")
+	public static float getItemRenderDistanceNeg(EntityItem item) {
+		return -getItemRenderDistance(item);
+	}
+
+	@SuppressWarnings("unused")
+	public static float getItemRenderDistance(EntityItem item) {
+		int mc = getModelCount(item.getItem());
+		if (mc <= 2) {
+			return 0.09375F;
+		} else {
+			return 0.125F / MathHelper.sqrt(mc - 1);
+		}
+	}
+
+	@SuppressWarnings("unused")
 	public static int drawItemCountWithShadow(FontRenderer fr, String text, float x, float y, int color) {
 		x = x - 19 + 2 + fr.getStringWidth(text);
 
@@ -53,6 +80,7 @@ public final class FiftyFortyHelpers {
 		return i;
 	}
 
+	@SuppressWarnings("unused")
 	public static int getMaxStackSize() {
 		return FiftyForty.maxStackSize;
 	}

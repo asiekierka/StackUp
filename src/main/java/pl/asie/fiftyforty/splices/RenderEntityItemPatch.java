@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
+import pl.asie.fiftyforty.FiftyFortyHelpers;
 
 public class RenderEntityItemPatch extends RenderEntityItem {
 	public RenderEntityItemPatch(RenderManager renderManagerIn, RenderItem p_i46167_2_) {
@@ -32,10 +33,6 @@ public class RenderEntityItemPatch extends RenderEntityItem {
 
 	@Override
 	protected int getModelCount(ItemStack stack) {
-		if (stack.getCount() > 2) {
-			return MathHelper.log2DeBruijn(stack.getCount());
-		} else {
-			return stack.getCount();
-		}
+		return FiftyFortyHelpers.getModelCount(stack);
 	}
 }
