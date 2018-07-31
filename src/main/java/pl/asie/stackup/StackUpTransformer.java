@@ -75,7 +75,7 @@ public class StackUpTransformer implements IClassTransformer {
 			});
 		}
 
-		if (StackUp.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
+		if (StackUpCoremodGlue.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "onExtract");
 			});

@@ -44,6 +44,13 @@ minecraft {
 }
 
 repositories {
+     maven {
+         url 'https://maven.mcmoddev.com/'
+     }
+     ivy {
+         name 'asie dependency mirror'
+         artifactPattern "http://asie.pl/javadeps/[module]-[revision](-[classifier]).[ext]"
+     }
 }
 
 sourceSets {
@@ -64,6 +71,9 @@ license {
 }
 
 dependencies {
+    deobfCompile name: "chiselsandbits", version: "14.20"
+    compile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.553"
+    compile "net.darkhax.gamestages:GameStages-1.12.2:2.0.97"
 }
 
 processResources {

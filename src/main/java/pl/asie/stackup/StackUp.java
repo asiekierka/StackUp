@@ -19,16 +19,32 @@
 
 package pl.asie.stackup;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import pl.asie.stackup.script.ScriptHandler;
+import pl.asie.stackup.script.TokenNumeric;
+import pl.asie.stackup.script.TokenProvider;
+import pl.asie.stackup.script.TokenResourceLocation;
 
 import java.io.File;
+import java.util.Objects;
 
 @Mod(
 		modid = "stackup",
@@ -41,11 +57,15 @@ public class StackUp {
 
 	@SidedProxy(modId = "stackup", clientSide = "pl.asie.stackup.ProxyClient", serverSide = "pl.asie.stackup.proxyCommon")
 	public static ProxyCommon proxy;
+	public static Logger logger;
 
+	public static boolean compatChiselsBits = true;
 	static int maxStackSize = 64;
-	static boolean patchRefinedStorage = true;
 	private static boolean alwaysAbbreviate = false;
 	private static int fontScaleLevel = -1;
+
+	private static File stackupScriptLocation;
+	private static boolean hadPostInit = false;
 
 	public static int getFontScaleLevel() {
 		if (fontScaleLevel >= 0) {
@@ -144,14 +164,16 @@ public class StackUp {
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		if (!StackUpHelpers.coremodUp) {
+		if (!StackUpCoremodGlue.coremodUp) {
 			throw new RuntimeException("Coremod not present!");
 		}
 
-		Configuration config = new Configuration(new File(new File("config"), "stackup.cfg"));
+		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
+		logger = LogManager.getLogger();
 
 		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
-		patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
+		StackUpCoremodGlue.patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
+		compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
 		fontScaleLevel = config.getInt("fontScaleLevel", "client", -2, -2, 3, "Above how many digits should the font be scaled down? -1 sets \"dynamic logic\" - 2 if maxStackSize > 999, 3 otherwise. -2 scales if maxStackSize > 99. Set 0 to have the text be permanently scaled down.");
 		alwaysAbbreviate = config.getBoolean("abbreviateAlways", "client", false, "Prefer abbreviation over scaling the font down.");
 
@@ -159,8 +181,46 @@ public class StackUp {
 			config.save();
 		}
 
+		stackupScriptLocation = new File(event.getModConfigurationDirectory(), "stackup");
 		MinecraftForge.EVENT_BUS.register(this);
 
 		Items.AIR.setMaxStackSize(maxStackSize);
+
+		//noinspection deprecation
+		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> Objects.requireNonNull(i.getRegistryName()).toString()));
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void onRegisterItems(RegistryEvent.Register<Item> event) {
+		if (hadPostInit) {
+			reload(event.getRegistry());
+		}
+	}
+
+	private static TObjectIntMap<Item> oldStackValues = new TObjectIntHashMap<>();
+
+	public static void backupStackSize(Item i) {
+		if (!oldStackValues.containsKey(i)) {
+			oldStackValues.put(i, i.getItemStackLimit());
+		}
+	}
+
+	protected static void reload(IForgeRegistry<Item> registry) {
+		for (Item i : oldStackValues.keySet()) {
+			i.setMaxStackSize(oldStackValues.get(i));
+		}
+		oldStackValues.clear();
+		new ScriptHandler().process(registry, stackupScriptLocation);
+	}
+
+	@Mod.EventHandler
+	public void postInit(FMLPostInitializationEvent event) {
+		reload(ForgeRegistries.ITEMS);
+		hadPostInit = true;
+	}
+
+	@Mod.EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new CommandStackUp());
 	}
 }

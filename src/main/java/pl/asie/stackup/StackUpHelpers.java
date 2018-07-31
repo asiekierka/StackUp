@@ -28,7 +28,6 @@ import net.minecraft.util.math.MathHelper;
 import java.util.Random;
 
 public final class StackUpHelpers {
-	public static boolean coremodUp = false;
 	public static final Random RANDOM = new Random();
 
 	private StackUpHelpers() {

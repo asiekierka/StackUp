@@ -49,7 +49,7 @@ public class StackUpCore implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> data) {
-		StackUpHelpers.coremodUp = true;
+		StackUpCoremodGlue.coremodUp = true;
 	}
 
 	@Override
