@@ -73,6 +73,10 @@ public class ScriptContext {
 	}
 
 	protected void parseLine(String line) throws IOException, TokenException {
+		if (line.startsWith("#")) {
+			return;
+		}
+
 		PushbackReader reader = new PushbackReader(new StringReader(line), 2);
 
 		List<Token> args = new ArrayList<>();
