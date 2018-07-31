@@ -107,9 +107,9 @@ public class StackUp {
 			} else if (countI >= 1000000 && countI <= 99999999) {
 				count = (countI / 1000000) + "m";
 			} else if (countI >= 100000000 && countI <= 999999999) {
-				count = "." + (countI / 100000000) + "g";
+				count = "." + (countI / 100000000) + "b";
 			} else if (countI >= 1000000000) {
-				count = (countI / 1000000000) + "g";
+				count = (countI / 1000000000) + "b";
 			}
 		} else {
 			if (countI >= 100000 && countI <= 999999) {
@@ -125,7 +125,7 @@ public class StackUp {
 				count = a + "M";
 			} else if (countI >= 1000000000) {
 				int a = (countI / 10000000);
-				count = (a / 100) + "." + String.format("%02d", (a % 100)) + "M";
+				count = (a / 100) + "." + String.format("%02d", (a % 100)) + "B";
 			}
 		}
 
@@ -162,15 +162,5 @@ public class StackUp {
 		MinecraftForge.EVENT_BUS.register(this);
 
 		Items.AIR.setMaxStackSize(maxStackSize);
-
-		//noinspection ConstantConditions
-		if (VERSION.equals("@VERSION@")) {
-			System.out.println("--      WARNING!      --");
-			System.out.println("5040 DEBUG MODE ENABLED!");
-			System.out.println("--      WARNING!      --");
-			Items.REDSTONE.setMaxStackSize(65536);
-			Items.DIAMOND.setMaxStackSize(1000000);
-			Items.QUARTZ.setMaxStackSize(999999999);
-		}
 	}
 }
