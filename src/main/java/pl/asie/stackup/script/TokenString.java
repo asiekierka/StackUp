@@ -37,10 +37,14 @@ public class TokenString<T> extends Token<T> {
 		this.ignoreCase = ignoreCase;
 	}
 
+	protected boolean isInvalidComparisonType(ComparisonType type) {
+		return type != ComparisonType.EQUAL && type != ComparisonType.APPROXIMATELY_EQUAL && type != ComparisonType.NOT_EQUAL;
+	}
+
 	@Override
 	public void parse(PushbackReader reader) throws IOException, TokenException {
 		type = getComparisonType(reader);
-		if (type != ComparisonType.EQUAL && type != ComparisonType.APPROXIMATELY_EQUAL && type != ComparisonType.NOT_EQUAL) {
+		if (isInvalidComparisonType(type)) {
 			throw new TokenException("Unsupported comparison type " + type + "!");
 		}
 

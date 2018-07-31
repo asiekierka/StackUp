@@ -32,6 +32,11 @@ public class TokenNumeric<T> extends Token<T> {
 		this.function = function;
 	}
 
+	protected boolean isInvalidComparisonType(ComparisonType type) {
+		return type != ComparisonType.EQUAL && type != ComparisonType.LESS_EQUAL && type != ComparisonType.NOT_EQUAL
+				&& type != ComparisonType.LESS_THAN && type != ComparisonType.GREATER_EQUAL && type != ComparisonType.GREATER_THAN;
+	}
+
 	public static int parseInteger(PushbackReader reader) throws NumberFormatException, IOException {
 		StringBuilder builder = new StringBuilder();
 		ScriptHandler.cutWhitespace(reader);
@@ -48,8 +53,7 @@ public class TokenNumeric<T> extends Token<T> {
 	@Override
 	public void parse(PushbackReader reader) throws IOException, TokenException {
 		type = getComparisonType(reader);
-		if (type != ComparisonType.EQUAL && type != ComparisonType.LESS_EQUAL && type != ComparisonType.NOT_EQUAL
-				&& type != ComparisonType.LESS_THAN && type != ComparisonType.GREATER_EQUAL && type != ComparisonType.GREATER_THAN) {
+		if (isInvalidComparisonType(type)) {
 			throw new TokenException("Unsupported comparison type " + type + "!");
 		}
 

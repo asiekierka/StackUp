@@ -19,10 +19,14 @@
 
 package pl.asie.stackup;
 
+import com.google.common.collect.ImmutableList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
@@ -38,10 +42,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pl.asie.stackup.script.ScriptHandler;
-import pl.asie.stackup.script.TokenNumeric;
-import pl.asie.stackup.script.TokenProvider;
-import pl.asie.stackup.script.TokenResourceLocation;
+import pl.asie.stackup.script.*;
 
 import java.io.File;
 import java.util.Objects;
@@ -186,7 +187,26 @@ public class StackUp {
 
 		Items.AIR.setMaxStackSize(maxStackSize);
 
-		//noinspection deprecation
+		TokenProvider.INSTANCE.addToken("blockClass", () -> new TokenClass<Item>((i) -> {
+			if (i instanceof ItemBlock) {
+				Block b = Block.getBlockFromItem(i);
+				if (b != Blocks.AIR) {
+					return ImmutableList.of(b.getClass());
+				}
+			}
+
+			return ImmutableList.of();
+		}, false));
+		TokenProvider.INSTANCE.addToken("itemClass", () -> new TokenClass<Item>((i) -> {
+			if (i instanceof ItemBlock) {
+				Block b = Block.getBlockFromItem(i);
+				if (b != Blocks.AIR) {
+					return ImmutableList.of(b.getClass(), i.getClass());
+				}
+			}
+
+			return ImmutableList.of(i.getClass());
+		}, false));
 		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> Objects.requireNonNull(i.getRegistryName()).toString()));
 	}
 
