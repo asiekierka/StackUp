@@ -73,6 +73,11 @@ public class ScriptContext {
 	}
 
 	protected void parseLine(String line) throws IOException, TokenException {
+		line = line.trim();
+		if (line.length() == 0) {
+			return;
+		}
+
 		if (line.startsWith("#")) {
 			return;
 		}
@@ -134,9 +139,16 @@ public class ScriptContext {
 			for (Item item : registry) {
 				boolean ok = true;
 				for (Token t : args) {
-					if (!t.apply(item)) {
-						ok = false;
-						break;
+					if (t.isInvert()) {
+						if (t.apply(item)) {
+							ok = false;
+							break;
+						}
+					} else {
+						if (!t.apply(item)) {
+							ok = false;
+							break;
+						}
 					}
 				}
 

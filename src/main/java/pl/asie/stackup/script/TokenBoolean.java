@@ -19,35 +19,25 @@
 
 package pl.asie.stackup.script;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.PushbackReader;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-public class TokenResourceLocation<T> extends TokenString<T> {
-	public TokenResourceLocation(Function<T, List<String>> function) {
-		super(function, false);
+public class TokenBoolean<T> extends Token<T> {
+	protected final Predicate<T> function;
+
+	public TokenBoolean(Predicate<T> function) {
+		this.function = function;
+	}
+
+	@Override
+	public void parse(PushbackReader reader) throws IOException, TokenException {
+		// pass
 	}
 
 	@Override
 	public boolean apply(T object) {
-		boolean cResult = getComparisonType() != ComparisonType.NOT_EQUAL;
-
-		for (String str : function.apply(object)) {
-			String[] str1 = str.split(":");
-			String[] str2 = getString().split(":");
-			if (str1.length == 2 && str2.length == 2) {
-				if (!str2[0].equals("*") && !compare(str1[0], str2[0])) {
-					return !cResult;
-				}
-
-				//noinspection RedundantIfStatement
-				if (!str2[1].equals("*") && !compare(str1[1], str2[1])) {
-					return !cResult;
-				}
-
-				return cResult;
-			}
-		}
-
-		return !cResult;
+		return function.test(object);
 	}
 }

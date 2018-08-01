@@ -59,6 +59,10 @@ public final class StackUpHelpers {
 
 	@SuppressWarnings("unused")
 	public static int drawItemCountWithShadow(FontRenderer fr, String text, float x, float y, int color) {
+		if (text.length() == 0) {
+			return 0;
+		}
+
 		x = x - 19 + 2 + fr.getStringWidth(text);
 
 		boolean forceSmall = StackUp.proxy.forceSmallTooltip();

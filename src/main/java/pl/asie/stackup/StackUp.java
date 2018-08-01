@@ -27,6 +27,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
@@ -39,6 +40,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -187,6 +189,9 @@ public class StackUp {
 
 		Items.AIR.setMaxStackSize(maxStackSize);
 
+		TokenProvider.INSTANCE.addToken("isBlock", () -> new TokenBoolean<Item>(
+				(i) -> i instanceof ItemBlock || (Block.getBlockFromItem(i) != Blocks.AIR)
+		));
 		TokenProvider.INSTANCE.addToken("blockClass", () -> new TokenClass<Item>((i) -> {
 			if (i instanceof ItemBlock) {
 				Block b = Block.getBlockFromItem(i);
@@ -197,17 +202,8 @@ public class StackUp {
 
 			return ImmutableList.of();
 		}, false));
-		TokenProvider.INSTANCE.addToken("itemClass", () -> new TokenClass<Item>((i) -> {
-			if (i instanceof ItemBlock) {
-				Block b = Block.getBlockFromItem(i);
-				if (b != Blocks.AIR) {
-					return ImmutableList.of(b.getClass(), i.getClass());
-				}
-			}
-
-			return ImmutableList.of(i.getClass());
-		}, false));
-		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> Objects.requireNonNull(i.getRegistryName()).toString()));
+		TokenProvider.INSTANCE.addToken("itemClass", () -> new TokenClass<Item>((i) -> ImmutableList.of(i.getClass()), false));
+		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> ImmutableList.of(Objects.requireNonNull(i.getRegistryName()).toString())));
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)

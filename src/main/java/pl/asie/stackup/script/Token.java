@@ -97,6 +97,16 @@ public abstract class Token<T> {
 		}
 	}
 
+	private boolean invert;
+
+	public boolean isInvert() {
+		return invert;
+	}
+
+	public void setInvert(boolean invert) {
+		this.invert = invert;
+	}
+
 	public abstract void parse(PushbackReader reader) throws IOException, TokenException;
 
 	public abstract boolean apply(T object);

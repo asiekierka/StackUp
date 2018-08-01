@@ -1,0 +1,6 @@
+Additions:
+
+* Add automatic Chisels & Bits compatibility: the Bits' stack size will now try to increase to match the stack size set in the Bit Bag.
+* Add rudimentary, slightly tested scripting system - see the project description for documentation!
+
+

@@ -1,0 +1,8 @@
+Additions:
+
+* Scripting: New boolean token type, and a new boolean token "isBlock".
+
+Bugs fixed:
+
+* Crash when mod tries to render item count string of length 0
+* Scripting: Empty lines without a comment on them causing a loading error

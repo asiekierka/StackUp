@@ -23,16 +23,16 @@ import net.minecraft.item.Item;
 
 import java.io.IOException;
 import java.io.PushbackReader;
+import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class TokenString<T> extends Token<T> {
-	protected final Function<T, String> function;
+	protected final Function<T, List<String>> function;
 	private final boolean ignoreCase;
 	private ComparisonType type;
 	private String s;
 
-	public TokenString(Function<T, String> function, boolean ignoreCase) {
+	public TokenString(Function<T, List<String>> function, boolean ignoreCase) {
 		this.function = function;
 		this.ignoreCase = ignoreCase;
 	}
@@ -73,6 +73,7 @@ public class TokenString<T> extends Token<T> {
 	protected boolean compare(String sReceived, String sSet) {
 		switch (type) {
 			case EQUAL:
+			case NOT_EQUAL:
 			default:
 				return ignoreCase ? sReceived.equalsIgnoreCase(sSet) : sReceived.equals(sSet);
 			case APPROXIMATELY_EQUAL:
@@ -91,15 +92,19 @@ public class TokenString<T> extends Token<T> {
 				} else {
 					return sReceived.equalsIgnoreCase(sSet);
 				}
-			case NOT_EQUAL:
-				return ignoreCase ? !sReceived.equalsIgnoreCase(sSet) : !sReceived.equals(sSet);
 		}
 	}
 
 	@Override
 	public boolean apply(T object) {
-		String str = function.apply(object);
-		return compare(str, s);
-	}
+		for (String str : function.apply(object)) {
+			if (compare(str, s)) {
+				// if NOT_EQUAL, compare checks for EQUAL, we return FALSE
+				// otherwise, we return TRUE
+				return getComparisonType() != ComparisonType.NOT_EQUAL;
+			}
+		}
 
+		return getComparisonType() == ComparisonType.NOT_EQUAL;
+	}
 }

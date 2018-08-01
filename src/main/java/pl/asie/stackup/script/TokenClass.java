@@ -21,12 +21,13 @@ package pl.asie.stackup.script;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TokenClass<T> extends TokenString<T> {
 	private final Function<T, List<Class>> classFunction;
 
 	public TokenClass(Function<T, List<Class>> function, boolean ignoreCase) {
-		super((t) -> function.apply(t).get(0).getName(), ignoreCase);
+		super((t) -> function.apply(t).stream().map(Class::getName).collect(Collectors.toList()), ignoreCase);
 		this.classFunction = function;
 	}
 

@@ -1,0 +1,4 @@
+Bugs fixed:
+
+* Fixed the suffix used for "billion".
+* Removed accidentally left over debug code.

@@ -41,8 +41,17 @@ public class TokenProvider {
 	@Nonnull
 	public Pair<String, Token> getToken(PushbackReader r) throws IOException {
 		int c;
+		boolean invToken = false;
 		StringBuilder key = new StringBuilder();
 		ScriptHandler.cutWhitespace(r);
+
+		c = r.read();
+		if (c == '!') {
+			invToken = true;
+		} else {
+			r.unread(c);
+		}
+
 		while (Character.isAlphabetic((c = r.read()))) {
 			key.appendCodePoint(c);
 		}
@@ -50,7 +59,9 @@ public class TokenProvider {
 		ScriptHandler.cutWhitespace(r);
 		Supplier<Token> s = tokenMap.get(key.toString());
 		if (s != null) {
-			return Pair.of(key.toString(), s.get());
+			Token t = s.get();
+			t.setInvert(invToken);
+			return Pair.of(key.toString(), t);
 		} else {
 			return Pair.of(key.toString(), null);
 		}
