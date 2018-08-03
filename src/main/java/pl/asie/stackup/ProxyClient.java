@@ -21,8 +21,20 @@ package pl.asie.stackup;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class ProxyClient extends ProxyCommon {
+	@SubscribeEvent
+	public void onTooltip(ItemTooltipEvent event) {
+		String count = Integer.toString(event.getItemStack().getCount());
+		String countA = StackUp.abbreviate(count);
+		//noinspection StringEquality
+		if (count != countA) {
+			event.getToolTip().add("x " + count);
+		}
+	}
+
 	@Override
 	public int getScaleFactor() {
 		return new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();

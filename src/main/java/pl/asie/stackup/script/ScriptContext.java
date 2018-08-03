@@ -24,7 +24,6 @@ import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import pl.asie.stackup.StackUp;

@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -58,7 +59,7 @@ import java.util.Objects;
 public class StackUp {
 	static final String VERSION = "@VERSION@";
 
-	@SidedProxy(modId = "stackup", clientSide = "pl.asie.stackup.ProxyClient", serverSide = "pl.asie.stackup.proxyCommon")
+	@SidedProxy(modId = "stackup", clientSide = "pl.asie.stackup.ProxyClient", serverSide = "pl.asie.stackup.ProxyCommon")
 	public static ProxyCommon proxy;
 	public static Logger logger;
 
@@ -155,16 +156,6 @@ public class StackUp {
 		return count;
 	}
 
-	@SubscribeEvent
-	public void onTooltip(ItemTooltipEvent event) {
-		String count = Integer.toString(event.getItemStack().getCount());
-		String countA = abbreviate(count);
-		//noinspection StringEquality
-		if (count != countA) {
-			event.getToolTip().add("x " + count);
-		}
-	}
-
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		if (!StackUpCoremodGlue.coremodUp) {
@@ -186,6 +177,7 @@ public class StackUp {
 
 		stackupScriptLocation = new File(event.getModConfigurationDirectory(), "stackup");
 		MinecraftForge.EVENT_BUS.register(this);
+		MinecraftForge.EVENT_BUS.register(proxy);
 
 		Items.AIR.setMaxStackSize(maxStackSize);
 
