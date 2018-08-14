@@ -17,9 +17,22 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.mixin;
 
-public class StackUpCoremodGlue {
-	public static boolean coremodUp = false;
-	static boolean patchRefinedStorage = true;
+import net.minecraft.init.Bootstrap;
+import net.minecraft.item.Item;
+import org.dimdev.rift.listener.ItemAdder;
+import org.dimdev.riftloader.RiftLoader;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import pl.asie.stackup.StackUp;
+
+@Mixin(Item.class)
+public abstract class MixinItem {
+	@Inject(method = "registerItems", at = @At("RETURN"))
+	private static void onRegisterItems(CallbackInfo ci) {
+		StackUp.load();
+	}
 }

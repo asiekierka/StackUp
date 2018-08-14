@@ -17,21 +17,24 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup.splices;
+package pl.asie.stackup.mixin;
 
-import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderEntityItem;
-import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import pl.asie.stackup.StackUp;
 import pl.asie.stackup.StackUpHelpers;
 
-public class RenderEntityItemPatch extends RenderEntityItem {
-	public RenderEntityItemPatch(RenderManager renderManagerIn, ItemRenderer p_i46167_2_) {
-		super(renderManagerIn, p_i46167_2_);
-	}
-
-	/* @Override
-	protected int getModelCount(ItemStack stack) {
+@Mixin(RenderEntityItem.class)
+public abstract class MixinRenderEntityItem {
+	@Overwrite
+	private int getModelCount(ItemStack stack) {
 		return StackUpHelpers.getModelCount(stack);
-	} */
+	}
 }

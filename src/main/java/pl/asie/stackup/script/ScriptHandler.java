@@ -21,7 +21,8 @@ package pl.asie.stackup.script;
 
 import com.google.common.collect.Ordering;
 import net.minecraft.item.Item;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.RegistryNamespaced;
 import pl.asie.stackup.StackUp;
 
 import java.io.*;
@@ -35,8 +36,8 @@ public class ScriptHandler {
 		r.unread(c);
 	}
 
-	protected void processFile(IForgeRegistry<Item> registry, File file) {
-		StackUp.logger.info("Parsing " + file.getName());
+	protected void processFile(RegistryNamespaced<ResourceLocation, Item> registry, File file) {
+		System.out.println("Parsing " + file.getName());
 
 		try (InputStream stream = new FileInputStream(file)) {
 			new ScriptContext(registry, stream, TokenProvider.INSTANCE).execute();
@@ -45,7 +46,7 @@ public class ScriptHandler {
 		}
 	}
 
-	protected void processDirectory(IForgeRegistry<Item> registry, File file) {
+	protected void processDirectory(RegistryNamespaced<ResourceLocation, Item> registry, File file) {
 		Set<File> files = new TreeSet<>(Ordering.natural());
 		for (File f : Objects.requireNonNull(file.listFiles())) {
 			files.add(f);
@@ -60,7 +61,7 @@ public class ScriptHandler {
 		}
 	}
 
-	public void process(IForgeRegistry<Item> registry, File baseDir) {
+	public void process(RegistryNamespaced<ResourceLocation, Item> registry, File baseDir) {
 		if (baseDir == null || !baseDir.exists() || !baseDir.isDirectory()) {
 			return;
 		}

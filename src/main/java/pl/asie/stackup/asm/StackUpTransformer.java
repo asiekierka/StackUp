@@ -17,7 +17,7 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.asm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -55,42 +55,44 @@ public class StackUpTransformer implements IClassTransformer {
 		Consumer<ClassNode> consumer = (n) -> {};
 		Consumer<ClassNode> emptyConsumer = consumer;
 
-		if (StackUpClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory")) {
+		if (StackUpClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory", "adb")) {
 			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "getInventoryStackLimit", "func_70297_j_");
+				patchMaxLimit(node, "getInventoryStackLimit", "f()I");
 			});
 		}
 
-		if (StackUpClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
+		/* if (StackUpClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node, "getSlotLimit");
 			});
-		}
+		} */
 
-		if (StackUpClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot")) {
+		if (StackUpClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot", "aqt")) {
 			consumer = consumer.andThen((node) -> {
 				patchMaxLimit(node,
-						"getItemStackLimit", "func_178170_b",
-						"getSlotStackLimit", "func_75219_a");
+						"getItemStackLimit", "b(Lata;)I",
+						"getSlotStackLimit", "a()I");
 			});
 		}
 
-		if (StackUpCoremodGlue.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
+		if (StackUpClassTracker.isExtends(transformedName, "net.minecraft.item.crafting.ServerRecipePlacer", "oz")) {
 			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "onExtract");
+				patchMaxLimit(node,
+						"func_201509_a", "a(ZIZ)I");
 			});
-		} else if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.stackup.splices.RenderEntityItemPatch",
-						"getModelCount", "func_177078_a");
+		}
 
+		if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName) || "cyu".equals(transformedName)) {
+			boolean isDeobf = transformedName.contains(".");
+
+			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					// LDC -0.09375
 					// v
 					// ALOAD 1
 					// INVOKESTATIC getItemRenderDistance(Lnet/minecraft/entity/item/EntityItem;)F
 					if ("doRender".equals(mn.name)
-							|| "func_76986_a".equals(mn.name)) {
+							|| ("a".equals(mn.name) && mn.desc.endsWith("DDDFF)V"))) {
 						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
 						while (it.hasNext()) {
 							AbstractInsnNode in = it.next();
@@ -107,7 +109,7 @@ public class StackUpTransformer implements IClassTransformer {
 											Opcodes.INVOKESTATIC,
 											"pl/asie/stackup/StackUpHelpers",
 											isNegative ? "getItemRenderDistanceNeg" : "getItemRenderDistance",
-											"(Lnet/minecraft/entity/item/EntityItem;)F",
+											isDeobf ? "(Lnet/minecraft/entity/item/EntityItem;)F" : "(Lami;)F",
 											false
 									));
 									System.out.println("Patched item render distance constant in RenderEntityItem!");
@@ -117,42 +119,38 @@ public class StackUpTransformer implements IClassTransformer {
 					}
 				}
 			});
-		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName)) {
+		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName) || "ade".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.stackup.splices.InventoryHelperPerformancePatch",
-						"spawnItemStack", "func_180173_a");
+						"spawnItemStack", "a");
 			});
-		} else if ("net.minecraft.util.ServerRecipeBookHelper".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "func_194324_a");
-			});
-		} else if ("net.minecraft.network.PacketBuffer".equals(transformedName)) {
+		} else if ("net.minecraft.network.PacketBuffer".equals(transformedName) || "hy".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.stackup.splices.PacketBufferWriters",
-						"readItemStack", "func_150791_c",
-						"writeItemStack", "func_150788_a");
+						"readItemStack", "k",
+						"writeItemStack", "a");
 			});
-		} else if ("net.minecraft.client.renderer.RenderItem".equals(transformedName)) {
+		} else if ("net.minecraft.client.renderer.ItemRenderer".equals(transformedName) || "cyw".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("renderItemOverlayIntoGUI".equals(mn.name)
-							|| "func_180453_a".equals(mn.name)) {
+							|| ("a".equals(mn.name) && mn.desc.endsWith(";IILjava/lang/String;)V"))) {
 						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
 						while (it.hasNext()) {
 							AbstractInsnNode in = it.next();
 							//     INVOKEVIRTUAL net/minecraft/client/gui/FontRenderer.drawStringWithShadow (Ljava/lang/String;FFI)I
 							if (in.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 								MethodInsnNode min = (MethodInsnNode) in;
-								if (min.owner.equals("net/minecraft/client/gui/FontRenderer")
+								if ((min.owner.equals("net/minecraft/client/gui/FontRenderer") || min.owner.equals("cfz"))
 										&& min.desc.equals("(Ljava/lang/String;FFI)I")) {
 									it.set(new MethodInsnNode(
 											Opcodes.INVOKESTATIC,
 											"pl/asie/stackup/StackUpHelpers",
 											"drawItemCountWithShadow",
-											"(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;FFI)I",
+											"(L"+min.owner+";Ljava/lang/String;FFI)I",
 											false
 									));
-									System.out.println("Patched item count render in RenderItem!");
+									System.out.println("Patched item count render in ItemRenderer!");
 									break;
 								}
 							}
@@ -160,18 +158,18 @@ public class StackUpTransformer implements IClassTransformer {
 					}
 				}
 			});
-		} else if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
+		} else if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName) || "ub".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("processCreativeInventoryAction".equals(mn.name)
-							|| "func_147344_a".equals(mn.name)) {
+							|| "a".equals(mn.name)) {
 						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
 						while (it.hasNext()) {
 							AbstractInsnNode in = it.next();
 							if (in.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 								MethodInsnNode min = (MethodInsnNode) in;
-								if (min.owner.equals("net/minecraft/item/ItemStack")
-										&& (min.name.equals("getCount") || min.name.equals("func_190916_E"))) {
+								if ((min.owner.equals("net/minecraft/item/ItemStack") || min.owner.equals("ata"))
+										&& (min.name.equals("getCount") || min.name.equals("C"))) {
 									AbstractInsnNode in2 = it.next();
 									if (in2.getOpcode() == Opcodes.BIPUSH) {
 										IntInsnNode intInsnNode = (IntInsnNode) in2;
@@ -188,7 +186,7 @@ public class StackUpTransformer implements IClassTransformer {
 					}
 				}
 			});
-		} else if ("net.minecraft.item.ItemStack".equals(transformedName)) {
+		} else if ("net.minecraft.item.ItemStack".equals(transformedName) || "ata".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				for (MethodNode mn : node.methods) {
 					if ("<init>".equals(mn.name)) {
@@ -204,8 +202,8 @@ public class StackUpTransformer implements IClassTransformer {
 									if (min2.name.equals("getByte")) {
 										min2.name = "getInteger";
 										patched = true;
-									} else if (min2.name.equals("func_74771_c")) {
-										min2.name = "func_74762_e";
+									} else if (min2.name.equals("f")) {
+										min2.name = "h";
 										patched = true;
 									}
 
@@ -216,7 +214,7 @@ public class StackUpTransformer implements IClassTransformer {
 								}
 							}
 						}
-					} else if ("func_77955_b".equals(mn.name) || "writeToNBT".equals(mn.name)) {
+					} else if ("writeToNBT".equals(mn.name) || "b(Lgy;)Lgy;".equals(mn.name+mn.desc)) {
 						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
 						while (it.hasNext()) {
 							AbstractInsnNode in = it.next();
@@ -232,8 +230,8 @@ public class StackUpTransformer implements IClassTransformer {
 									if (min2.name.equals("setByte")) {
 										min2.name = "setInteger";
 										patched = true;
-									} else if (min2.name.equals("func_74774_a")) {
-										min2.name = "func_74768_a";
+									} else if ("a(Ljava/lang/String;B)V".equals(min2.name + min2.desc)) {
+										min2.name = "b";
 										patched = true;
 									}
 
@@ -265,7 +263,7 @@ public class StackUpTransformer implements IClassTransformer {
 		Set<String> methodSet = Sets.newHashSet(methods);
 
 		for (MethodNode mn : node.methods) {
-			if (methodSet.contains(mn.name)) {
+			if (methodSet.contains(mn.name) || methodSet.contains(mn.name + mn.desc)) {
 				int patchesMade = 0;
 
 				ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
@@ -312,7 +310,7 @@ public class StackUpTransformer implements IClassTransformer {
 	}
 
 	public static ClassNode spliceClasses(final ClassNode data, final String className, final String... methods) {
-		try (InputStream stream = StackUpCore.class.getClassLoader().getResourceAsStream(className.replace('.', '/') + ".class")) {
+		try (InputStream stream = StackUpTransformer.class.getClassLoader().getResourceAsStream(className.replace('.', '/') + ".class")) {
 			return spliceClasses(data, ByteStreams.toByteArray(stream), className, methods);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

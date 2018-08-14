@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.7.7",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(DEFAULT)",
+  "package": "pl.asie.stackup.mixin",
+  "refmap": "mixins.stackup.refmap.json",
+  "mixins": [
+    "MixinItem",
+    "MixinItemStack",
+    "MixinMinecraftServer",
+    "MixinRenderEntityItem"
+  ]
+}

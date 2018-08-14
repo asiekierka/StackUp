@@ -1,0 +1,11 @@
+* Ported to Minecraft 1.13, with the power of Rift!
+
+Changes:
+
+* StackUp scripts are now expected to be in data packs, "data/minecraft/scripts/<name>.stackup".
+* The maximum stack size is now automatically decided upon by scanning all scripts.
+
+Errata:
+
+* No stack size rendering configuration! Rift doesn't yet have a configuration API, and I didn't feel like
+  introducing a non-standard one myself.

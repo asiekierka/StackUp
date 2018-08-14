@@ -1,0 +1,10 @@
+{
+  "id": "stackup",
+  "name": "StackUp!",
+  "authors": [
+    "asie"
+  ],
+  "listeners": [
+    "pl.asie.stackup.asm.StackUpCore"
+  ]
+}

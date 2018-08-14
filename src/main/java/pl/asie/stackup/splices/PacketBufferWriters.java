@@ -34,7 +34,7 @@ public class PacketBufferWriters extends PacketBuffer {
 	}
 
 	@Override
-	public ItemStack readItemStack() throws IOException {
+	public ItemStack readItemStack() {
 		int id = this.readShort();
 
 		if (id < 0) {
@@ -44,9 +44,8 @@ public class PacketBufferWriters extends PacketBuffer {
 			if (count == Constants.COUNT_MAGIC) {
 				count = this.readInt();
 			}
-			int damage = this.readShort();
-			ItemStack itemstack = new ItemStack(Item.getItemById(id), count, damage);
-			itemstack.getItem().readNBTShareTag(itemstack, this.readCompoundTag());
+			ItemStack itemstack = new ItemStack(Item.getItemById(id), count);
+			itemstack.setTagCompound(readCompoundTag());
 			return itemstack;
 		}
 	}
@@ -63,11 +62,10 @@ public class PacketBufferWriters extends PacketBuffer {
 				this.writeByte(Constants.COUNT_MAGIC);
 				this.writeInt(stack.getCount());
 			}
-			this.writeShort(stack.getMetadata());
 			NBTTagCompound tag = null;
 
 			if (stack.getItem().isDamageable() || stack.getItem().getShareTag()) {
-				tag = stack.getItem().getNBTShareTag(stack);
+				tag = stack.getTagCompound();
 			}
 
 			this.writeCompoundTag(tag);

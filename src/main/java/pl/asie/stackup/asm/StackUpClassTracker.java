@@ -17,17 +17,18 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.asm;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
+import com.google.common.collect.Sets;
 import org.objectweb.asm.ClassReader;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class StackUpClassTracker {
 	private static Map<String, String> superclassMap = new HashMap<>();
@@ -35,7 +36,7 @@ public class StackUpClassTracker {
 
 	public static void addClass(String currC) {
 		if (!superclassMap.containsKey(currC)) {
-			String filename = FMLDeobfuscatingRemapper.INSTANCE.unmap(currC.replace('.', '/'));
+			String filename = currC.replace('.', '/');
 			filename = filename.replace('.', '/') + ".class";
 			InputStream stream = StackUpClassTracker.class.getClassLoader().getResourceAsStream(filename);
 			if (stream != null) {
@@ -43,11 +44,11 @@ public class StackUpClassTracker {
 					ClassReader reader = new ClassReader(stream);
 					String newC = reader.getSuperName();
 					if (newC != null) {
-						newC = FMLDeobfuscatingRemapper.INSTANCE.map(newC).replace('/', '.');
+						newC = newC.replace('/', '.');
 						superclassMap.put(currC, newC);
 					}
 					for (String s : reader.getInterfaces()) {
-						String newI = FMLDeobfuscatingRemapper.INSTANCE.map(s).replace('/', '.');
+						String newI = s.replace('/', '.');
 						interfaceMap.put(currC, newI);
 					}
 				} catch (IOException e) {
@@ -61,10 +62,12 @@ public class StackUpClassTracker {
 		}
 	}
 
-	public static boolean isImplements(String c, String sc) {
+	public static boolean isImplements(String c, String... sc) {
 		String currC = c;
+		Set<String> scs = Sets.newHashSet(sc);
+
 		while (currC != null && currC.length() > 0) {
-			if (currC.equals(sc)) {
+			if (scs.contains(currC)) {
 				return true;
 			} else {
 				addClass(currC);
@@ -80,10 +83,12 @@ public class StackUpClassTracker {
 		return false;
 	}
 
-	public static boolean isExtends(String c, String sc) {
+	public static boolean isExtends(String c, String... sc) {
 		String currC = c;
+		Set<String> scs = Sets.newHashSet(sc);
+
 		while (currC != null && currC.length() > 0) {
-			if (currC.equals(sc)) {
+			if (scs.contains(currC)) {
 				return true;
 			} else {
 				addClass(currC);

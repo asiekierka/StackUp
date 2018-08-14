@@ -17,21 +17,23 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup.splices;
+package pl.asie.stackup.asm;
 
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.entity.RenderEntityItem;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.item.ItemStack;
-import pl.asie.stackup.StackUpHelpers;
+import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.dimdev.rift.listener.DispenserBehaviorAdder;
+import org.dimdev.riftloader.listener.InitializationListener;
+import org.spongepowered.asm.mixin.Mixins;
 
-public class RenderEntityItemPatch extends RenderEntityItem {
-	public RenderEntityItemPatch(RenderManager renderManagerIn, ItemRenderer p_i46167_2_) {
-		super(renderManagerIn, p_i46167_2_);
+import java.io.File;
+import java.util.List;
+
+public class StackUpCore implements InitializationListener {
+	@Override
+	public void onInitialization() {
+		//noinspection unchecked
+		((List<String>) Launch.blackboard.get("TweakClasses")).add("pl.asie.stackup.asm.StackUpTweaker");
+		Mixins.addConfiguration("mixins.stackup.json");
 	}
-
-	/* @Override
-	protected int getModelCount(ItemStack stack) {
-		return StackUpHelpers.getModelCount(stack);
-	} */
 }

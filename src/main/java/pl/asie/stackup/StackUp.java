@@ -20,56 +20,34 @@
 package pl.asie.stackup;
 
 import com.google.common.collect.ImmutableList;
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.pattern.BlockTagMatcher;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.IForgeRegistry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.util.ResourceLocation;
+import org.dimdev.rift.listener.MinecraftStartListener;
 import pl.asie.stackup.script.*;
 
-import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-@Mod(
-		modid = "stackup",
-		name = "StackUp",
-		version = StackUp.VERSION,
-		dependencies = "before:refinedstorage"
-)
 public class StackUp {
-	static final String VERSION = "@VERSION@";
+	public static final int MAX_MAX_STACK_SIZE = 1048576;
+	public static int maxStackSize = 64;
+	public static boolean alwaysAbbreviate = false;
+	public static int fontScaleLevel = -2;
 
-	@SidedProxy(modId = "stackup", clientSide = "pl.asie.stackup.ProxyClient", serverSide = "pl.asie.stackup.ProxyCommon")
-	public static ProxyCommon proxy;
-	public static Logger logger;
-
-	public static boolean compatChiselsBits = true;
-	static int maxStackSize = 64;
-	private static boolean alwaysAbbreviate = false;
-	private static int fontScaleLevel = -1;
-
-	private static File stackupScriptLocation;
-	private static boolean hadPostInit = false;
+	// TODO
+	public static ProxyCommon proxy = new ProxyCommon();
 
 	public static int getFontScaleLevel() {
 		if (fontScaleLevel >= 0) {
@@ -156,31 +134,31 @@ public class StackUp {
 		return count;
 	}
 
-	@Mod.EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		if (!StackUpCoremodGlue.coremodUp) {
-			throw new RuntimeException("Coremod not present!");
+	private static Field mssField;
+
+	public static void setMaxStackSize(Item i, int target) {
+		// thanks mojang
+		try {
+			if (mssField == null) {
+				try {
+					mssField = Item.class.getDeclaredField("maxStackSize");
+				} catch (NoSuchFieldException e) {
+					try {
+						//noinspection JavaReflectionMemberAccess
+						mssField = Item.class.getDeclaredField("m");
+					} catch (NoSuchFieldException ee) {
+						throw new RuntimeException(ee);
+					}
+				}
+				mssField.setAccessible(true);
+			}
+			mssField.set(i, target);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
 		}
+	}
 
-		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-		logger = LogManager.getLogger();
-
-		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
-		StackUpCoremodGlue.patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
-		compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
-		fontScaleLevel = config.getInt("fontScaleLevel", "client", -2, -2, 3, "Above how many digits should the font be scaled down? -1 sets \"dynamic logic\" - 2 if maxStackSize > 999, 3 otherwise. -2 scales if maxStackSize > 99. Set 0 to have the text be permanently scaled down.");
-		alwaysAbbreviate = config.getBoolean("abbreviateAlways", "client", false, "Prefer abbreviation over scaling the font down.");
-
-		if (config.hasChanged()) {
-			config.save();
-		}
-
-		stackupScriptLocation = new File(event.getModConfigurationDirectory(), "stackup");
-		MinecraftForge.EVENT_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(proxy);
-
-		Items.AIR.setMaxStackSize(maxStackSize);
-
+	public static void load() {
 		TokenProvider.INSTANCE.addToken("isBlock", () -> new TokenBoolean<Item>(
 				(i) -> i instanceof ItemBlock || (Block.getBlockFromItem(i) != Blocks.AIR)
 		));
@@ -195,17 +173,22 @@ public class StackUp {
 			return ImmutableList.of();
 		}, false));
 		TokenProvider.INSTANCE.addToken("itemClass", () -> new TokenClass<Item>((i) -> ImmutableList.of(i.getClass()), false));
-		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> ImmutableList.of(Objects.requireNonNull(i.getRegistryName()).toString())));
+		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> ImmutableList.of(Objects.requireNonNull(Item.REGISTRY.getIDForObject(i)).toString())));
+		TokenProvider.INSTANCE.addToken("tag", () -> new TokenResourceLocation<Item>((i) -> ItemTags.getCollection().getTags().stream().filter((t) -> i.isTagged(Objects.requireNonNull(ItemTags.getCollection().getTag(t)))).map(ResourceLocation::toString).collect(Collectors.toList())));
+
+		/* Configuration config = new Configuration(event.getSuggestedConfigurationFile());
+		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
+		StackUpCoremodGlue.patchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
+		compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
+		fontScaleLevel = config.getInt("fontScaleLevel", "client", -2, -2, 3, "Above how many digits should the font be scaled down? -1 sets \"dynamic logic\" - 2 if maxStackSize > 999, 3 otherwise. -2 scales if maxStackSize > 99. Set 0 to have the text be permanently scaled down.");
+		alwaysAbbreviate = config.getBoolean("abbreviateAlways", "client", false, "Prefer abbreviation over scaling the font down.");
+
+		if (config.hasChanged()) {
+			config.save();
+		} */
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void onRegisterItems(RegistryEvent.Register<Item> event) {
-		if (hadPostInit) {
-			reload(event.getRegistry());
-		}
-	}
-
-	private static TObjectIntMap<Item> oldStackValues = new TObjectIntHashMap<>();
+	private static Object2IntMap<Item> oldStackValues = new Object2IntOpenHashMap<>();
 
 	public static void backupStackSize(Item i) {
 		if (!oldStackValues.containsKey(i)) {
@@ -213,22 +196,23 @@ public class StackUp {
 		}
 	}
 
-	protected static void reload(IForgeRegistry<Item> registry) {
+	public static void restoreStackSizes() {
 		for (Item i : oldStackValues.keySet()) {
-			i.setMaxStackSize(oldStackValues.get(i));
+			setMaxStackSize(i, oldStackValues.get(i));
 		}
 		oldStackValues.clear();
-		new ScriptHandler().process(registry, stackupScriptLocation);
 	}
 
-	@Mod.EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		reload(ForgeRegistries.ITEMS);
-		hadPostInit = true;
-	}
+	public static void findMaxStackSize(boolean search) {
+		int mss = 64;
 
-	@Mod.EventHandler
-	public void serverStarting(FMLServerStartingEvent event) {
-		event.registerServerCommand(new CommandStackUp());
+		if (search) {
+			for (Item i : Item.REGISTRY) {
+				mss = Math.max(i.getItemStackLimit(), mss);
+			}
+		}
+
+		maxStackSize = mss;
+		setMaxStackSize(Items.AIR, maxStackSize);
 	}
 }

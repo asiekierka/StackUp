@@ -1,19 +1,23 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "https://www.dimdev.org/maven" }
+        maven { url 'http://repo.spongepowered.org/maven' }
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'org.dimdev:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.net.minecrell:licenser:0.3"
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'java'
+apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'net.minecrell.licenser'
 
-version = "0.2.3"
+version = "0.3.0-Rift"
 group = "pl.asie.stackup"
 archivesBaseName = "StackUp"
 
@@ -25,32 +29,29 @@ compileJava {
 if (System.getenv("BUILD_NUMBER") != null)
     version += ".${System.getenv("BUILD_NUMBER")}"
 
-configurations {
-    deploy
-}
-
 dependencies {
-    deploy 'org.apache.maven.wagon:wagon-ssh:2.10'
+    implementation 'org.dimdev:rift:1.0.3-44:dev'
 }
 
 minecraft {
-    version = "1.12.2-14.23.4.2745"
-    runDir = "run"
-    
-    mappings = "snapshot_20180730"
+    version = "1.13"
+    mappings = "snapshot_5"
+
+    runDir = "run"    
+    tweakClass = 'org.dimdev.riftloader.launch.RiftLoaderClientTweaker'
 
     replace '@VERSION@', project.version
     replace '@MC_VERSION@', version
 }
 
+mixin {
+    defaultObfuscationEnv notch
+    add sourceSets.main, 'mixins.stackup.refmap.json'
+}
+
 repositories {
-     maven {
-         url 'https://maven.mcmoddev.com/'
-     }
-     ivy {
-         name 'asie dependency mirror'
-         artifactPattern "http://asie.pl/javadeps/[module]-[revision](-[classifier]).[ext]"
-     }
+    mavenCentral()
+    maven { url 'https://www.dimdev.org/maven/' }
 }
 
 sourceSets {
@@ -71,9 +72,7 @@ license {
 }
 
 dependencies {
-    deobfCompile name: "chiselsandbits", version: "14.20"
-    compile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.553"
-    compile "net.darkhax.gamestages:GameStages-1.12.2:2.0.97"
+    implementation 'org.dimdev:rift:1.0.3-44:dev'
 }
 
 processResources {
@@ -92,25 +91,4 @@ processResources {
 
 jar {
     manifest.attributes "Manifest-Version": "1.0"
-    manifest.attributes "FMLCorePlugin": "pl.asie.stackup.StackUpCore"
-    manifest.attributes "FMLCorePluginContainsFMLMod": "true"
 }
-
-if (file('private.gradle').exists()) {
-	apply from: 'private.gradle'
-}
-
-task signJar(type: SignJar, dependsOn: reobfJar) {
-    onlyIf {
-        project.hasProperty('keyStore')
-    }
-
-    keyStore = project.keyStore
-    alias = project.keyStoreAlias
-    storePass = project.keyStorePass
-    keyPass = project.keyStoreKeyPass
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
-}
-
-build.dependsOn(signJar)

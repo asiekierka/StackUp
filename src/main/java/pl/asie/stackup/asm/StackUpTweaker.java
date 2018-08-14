@@ -17,43 +17,30 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.asm;
 
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
-import javax.annotation.Nullable;
-import java.util.Map;
+import java.io.File;
+import java.util.List;
 
-@IFMLLoadingPlugin.Name("StackUpCore")
-@IFMLLoadingPlugin.MCVersion("1.12.2")
-@IFMLLoadingPlugin.SortingIndex(1001)
-@IFMLLoadingPlugin.TransformerExclusions("pl.asie.stackup")
-public class StackUpCore implements IFMLLoadingPlugin {
+public class StackUpTweaker implements ITweaker {
 	@Override
-	public String[] getASMTransformerClass() {
-		return new String[] {
-				"pl.asie.stackup.StackUpTransformer"
-		};
+	public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {}
+
+	@Override
+	public void injectIntoClassLoader(LaunchClassLoader classLoader) {
+		classLoader.registerTransformer("pl.asie.stackup.asm.StackUpTransformer");
 	}
 
 	@Override
-	public String getModContainerClass() {
-		return null;
-	}
-
-	@Nullable
-	@Override
-	public String getSetupClass() {
+	public String getLaunchTarget() {
 		return null;
 	}
 
 	@Override
-	public void injectData(Map<String, Object> data) {
-		StackUpCoremodGlue.coremodUp = true;
-	}
-
-	@Override
-	public String getAccessTransformerClass() {
-		return null;
+	public String[] getLaunchArguments() {
+		return new String[0];
 	}
 }

@@ -20,11 +20,12 @@
 package pl.asie.stackup.script;
 
 import com.google.common.base.Charsets;
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.RegistryNamespaced;
 import org.apache.commons.lang3.tuple.Pair;
 import pl.asie.stackup.StackUp;
 import pl.asie.stackup.StackUpHelpers;
@@ -35,17 +36,17 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ScriptContext {
-	private final IForgeRegistry<Item> registry;
+	private final RegistryNamespaced<ResourceLocation, Item> registry;
 	private final TokenProvider tokenProvider;
 	private final InputStreamReader streamReader;
 	private final BufferedReader reader;
-	private final TObjectIntMap<Item> stackSizeMap;
+	private final Object2IntMap<ResourceLocation> stackSizeMap;
 
-	public ScriptContext(IForgeRegistry<Item> registry, InputStream stream, TokenProvider provider) {
+	public ScriptContext(RegistryNamespaced<ResourceLocation, Item> registry, InputStream stream, TokenProvider provider) {
 		this.registry = registry;
 		this.tokenProvider = provider;
 		this.reader = new BufferedReader(streamReader = new InputStreamReader(stream, Charsets.UTF_8));
-		this.stackSizeMap = new TObjectIntHashMap<>();
+		this.stackSizeMap = new Object2IntOpenHashMap<>();
 
 		// hacks...
 		provider.addToken("size", () -> new TokenNumeric<Item>((item) -> getStackSize(item, false)));
@@ -66,7 +67,7 @@ public class ScriptContext {
 			e.printStackTrace();
 		}
 
-		StackUp.logger.info("Parsed " + parsed + " lines.");
+		System.out.println("Parsed " + parsed + " lines.");
 
 		applyChanges();
 	}
@@ -135,7 +136,8 @@ public class ScriptContext {
 		}
 
 		if (newStackSize > 0) {
-			for (Item item : registry) {
+			for (ResourceLocation r : registry.getKeys()) {
+				Item item = registry.getObject(r);
 				boolean ok = true;
 				for (Token t : args) {
 					if (t.isInvert()) {
@@ -154,19 +156,19 @@ public class ScriptContext {
 				if (ok) {
 					switch (operator) {
 						case '=':
-							stackSizeMap.put(item, clamp(newStackSize));
+							stackSizeMap.put(r, clamp(newStackSize));
 							break;
 						case '+':
-							stackSizeMap.put(item, clamp(getStackSize(item, true) + newStackSize));
+							stackSizeMap.put(r, clamp(getStackSize(item, true) + newStackSize));
 							break;
 						case '-':
-							stackSizeMap.put(item, clamp(getStackSize(item, true) - newStackSize));
+							stackSizeMap.put(r, clamp(getStackSize(item, true) - newStackSize));
 							break;
 						case '*':
-							stackSizeMap.put(item, clamp(getStackSize(item, true) * newStackSize));
+							stackSizeMap.put(r, clamp(getStackSize(item, true) * newStackSize));
 							break;
 						case '/':
-							stackSizeMap.put(item, clamp(getStackSize(item, true) / newStackSize));
+							stackSizeMap.put(r, clamp(getStackSize(item, true) / newStackSize));
 							break;
 					}
 				}
@@ -176,7 +178,7 @@ public class ScriptContext {
 
 	protected int clamp(int v) {
 		if (v < 1) return 1;
-		else if (v > StackUpHelpers.getMaxStackSize()) return StackUpHelpers.getMaxStackSize();
+		else if (v > StackUp.MAX_MAX_STACK_SIZE) return StackUp.MAX_MAX_STACK_SIZE;
 		else return v;
 	}
 
@@ -190,18 +192,20 @@ public class ScriptContext {
 	}
 
 	protected void applyChanges() {
-		for (Item i : stackSizeMap.keySet()) {
-			if (i == Items.AIR) {
+		for (ResourceLocation r : stackSizeMap.keySet()) {
+			Item i = registry.getObject(r);
+			if (i == null || i == Items.AIR) {
 				continue;
 			}
 
-			int target = stackSizeMap.get(i);
+			int target = stackSizeMap.getInt(r);
 			StackUp.backupStackSize(i);
-			i.setMaxStackSize(target);
+			StackUp.setMaxStackSize(i, target);
+
 			//noinspection deprecation
 			int result = i.getItemStackLimit();
 			if (target != result) {
-				StackUp.logger.warn("Could not change stack size on item " + i.getRegistryName() + "!");
+				System.out.println("Could not change stack size on item " + r + "!");
 			}
 		}
 
