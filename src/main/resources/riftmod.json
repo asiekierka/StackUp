@@ -5,6 +5,7 @@
     "asie"
   ],
   "listeners": [
-    "pl.asie.stackup.asm.StackUpCore"
+    "pl.asie.stackup.asm.StackUpCore",
+    "pl.asie.stackup.network.StackUpPayloadHandler"
   ]
 }

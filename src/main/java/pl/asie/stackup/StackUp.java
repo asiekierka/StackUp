@@ -188,7 +188,7 @@ public class StackUp {
 		} */
 	}
 
-	private static Object2IntMap<Item> oldStackValues = new Object2IntOpenHashMap<>();
+	public static Object2IntMap<Item> oldStackValues = new Object2IntOpenHashMap<>();
 
 	public static void backupStackSize(Item i) {
 		if (!oldStackValues.containsKey(i)) {
