@@ -19,6 +19,8 @@
 
 package pl.asie.stackup.script;
 
+import net.minecraft.item.Item;
+
 import java.util.List;
 import java.util.function.Function;
 
@@ -36,12 +38,12 @@ public class TokenResourceLocation<T> extends TokenString<T> {
 			String[] str2 = getString().split(":");
 			if (str1.length == 2 && str2.length == 2) {
 				if (!str2[0].equals("*") && !compare(str1[0], str2[0])) {
-					return !cResult;
+					continue;
 				}
 
 				//noinspection RedundantIfStatement
 				if (!str2[1].equals("*") && !compare(str1[1], str2[1])) {
-					return !cResult;
+					continue;
 				}
 
 				return cResult;

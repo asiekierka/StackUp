@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
 import org.apache.commons.lang3.tuple.Pair;
@@ -67,7 +69,7 @@ public class ScriptContext {
 			e.printStackTrace();
 		}
 
-		System.out.println("Parsed " + parsed + " lines.");
+		System.out.println("[StackUp] Parsed " + parsed + " lines.");
 
 		applyChanges();
 	}
@@ -136,8 +138,7 @@ public class ScriptContext {
 		}
 
 		if (newStackSize > 0) {
-			for (ResourceLocation r : registry.getKeys()) {
-				Item item = registry.getObject(r);
+			for (Item item : registry) {
 				boolean ok = true;
 				for (Token t : args) {
 					if (t.isInvert()) {
@@ -153,6 +154,7 @@ public class ScriptContext {
 					}
 				}
 
+				ResourceLocation r = registry.getNameForObject(item);
 				if (ok) {
 					switch (operator) {
 						case '=':

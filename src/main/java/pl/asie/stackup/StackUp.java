@@ -173,8 +173,8 @@ public class StackUp {
 			return ImmutableList.of();
 		}, false));
 		TokenProvider.INSTANCE.addToken("itemClass", () -> new TokenClass<Item>((i) -> ImmutableList.of(i.getClass()), false));
-		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> ImmutableList.of(Objects.requireNonNull(Item.REGISTRY.getIDForObject(i)).toString())));
-		TokenProvider.INSTANCE.addToken("tag", () -> new TokenResourceLocation<Item>((i) -> ItemTags.getCollection().getTags().stream().filter((t) -> i.isTagged(Objects.requireNonNull(ItemTags.getCollection().getTag(t)))).map(ResourceLocation::toString).collect(Collectors.toList())));
+		TokenProvider.INSTANCE.addToken("id", () -> new TokenResourceLocation<Item>((i) -> ImmutableList.of(Objects.requireNonNull(Item.REGISTRY.getNameForObject(i)).toString())));
+		TokenProvider.INSTANCE.addToken("tag", () -> new TokenResourceLocation<Item>((i) -> ItemTags.getCollection().getTags().stream().filter((t) -> ItemTags.getCollection().getTag(t).isTagged(i)).map(ResourceLocation::toString).collect(Collectors.toList())));
 
 		/* Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");

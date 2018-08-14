@@ -1,5 +1,9 @@
 * Ported to Minecraft 1.13, with the power of Rift!
 
+Additions:
+
+* Scripting: The tag="<tag>" token, which matches tags.
+
 Changes:
 
 * StackUp scripts are now expected to be in data packs, "data/minecraft/scripts/<name>.stackup".
