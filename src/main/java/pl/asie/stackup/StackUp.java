@@ -78,6 +78,7 @@ public class StackUp {
 		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
 
 		StackUpConfig.coremodPatchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
+		StackUpConfig.coremodPatchMantle = config.getBoolean("mantle", "modpatches", true, "Should Mantle (Tinkers' Construct, etc.) be patched to support large stacks?");
 		compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
 
 		StackUpConfig.lowestScaleDown = config.getFloat("fontScaleDownTo", "client", 0.0f, 0.0f, 1.0f, "Maximum amount by which StackUp is allowed to scale down the font.");

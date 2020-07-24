@@ -22,6 +22,7 @@ package pl.asie.stackup;
 public class StackUpConfig {
 	public static boolean coremodActive = false;
 	public static boolean coremodPatchRefinedStorage = true;
+	public static boolean coremodPatchMantle = true;
 
 	public static boolean scriptingActive = false;
 

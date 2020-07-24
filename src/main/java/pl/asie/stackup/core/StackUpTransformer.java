@@ -74,6 +74,8 @@ public class StackUpTransformer implements IClassTransformer {
 
 		if (StackUpConfig.coremodPatchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("onExtract"));
+		} else if (StackUpConfig.coremodPatchMantle && "slimeknights.mantle.tileentity.TileInventory".equals(transformedName)) {
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("<init>"));
 		} else if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
 				spliceClasses(node, "pl.asie.stackup.core.RenderEntityItemSplice",
