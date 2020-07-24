@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -17,7 +17,7 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.core;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StackUpClassTracker {
-	private static Map<String, String> superclassMap = new HashMap<>();
-	private static Multimap<String, String> interfaceMap = HashMultimap.create();
+	private static final Map<String, String> superclassMap = new HashMap<>();
+	private static final Multimap<String, String> interfaceMap = HashMultimap.create();
 
 	public static void addClass(String currC) {
 		if (!superclassMap.containsKey(currC)) {

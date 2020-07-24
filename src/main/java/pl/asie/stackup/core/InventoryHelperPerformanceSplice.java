@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -17,14 +17,14 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup.splices;
+package pl.asie.stackup.core;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import pl.asie.stackup.StackUpHelpers;
 
-public class InventoryHelperPerformancePatch {
+public class InventoryHelperPerformanceSplice {
 	public static void func_180173_a(World world, double x, double y, double z, ItemStack stack) {
 		spawnItemStack(world, x, y, z, stack);
 	}

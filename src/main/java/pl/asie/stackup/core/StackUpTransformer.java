@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -17,7 +17,7 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.core;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -29,6 +29,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.*;
+import pl.asie.stackup.StackUpConfig;
+import pl.asie.stackup.StackUpCore;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,238 +58,53 @@ public class StackUpTransformer implements IClassTransformer {
 		Consumer<ClassNode> emptyConsumer = consumer;
 
 		if (StackUpClassTracker.isImplements(transformedName, "net.minecraft.inventory.IInventory")) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "getInventoryStackLimit", "func_70297_j_");
-			});
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("getInventoryStackLimit", "func_70297_j_"));
 		}
 
 		if (StackUpClassTracker.isImplements(transformedName, "net.minecraftforge.items.IItemHandler")) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "getSlotLimit");
-			});
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("getSlotLimit"));
 		}
 
 		if (StackUpClassTracker.isExtends(transformedName, "net.minecraft.inventory.Slot")) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node,
-						"getItemStackLimit", "func_178170_b",
-						"getSlotStackLimit", "func_75219_a");
-			});
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit(
+					"getItemStackLimit", "func_178170_b",
+					"getSlotStackLimit", "func_75219_a"
+			));
 		}
 
-		if (StackUpCoremodGlue.patchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "onExtract");
-			});
+		if (StackUpConfig.coremodPatchRefinedStorage && transformedName.startsWith("com.raoulvdberge.refinedstorage.apiimpl.network.grid.handler.ItemGridHandler")) {
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("onExtract"));
 		} else if ("net.minecraft.client.renderer.entity.RenderEntityItem".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.stackup.splices.RenderEntityItemPatch",
+				spliceClasses(node, "pl.asie.stackup.core.RenderEntityItemSplice",
 						"getModelCount", "func_177078_a");
-
-				for (MethodNode mn : node.methods) {
-					// LDC -0.09375
-					// v
-					// ALOAD 1
-					// INVOKESTATIC getItemRenderDistance(Lnet/minecraft/entity/item/EntityItem;)F
-					if ("doRender".equals(mn.name)
-							|| "func_76986_a".equals(mn.name)) {
-						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-						while (it.hasNext()) {
-							AbstractInsnNode in = it.next();
-							if (in.getOpcode() == Opcodes.LDC) {
-								LdcInsnNode min = (LdcInsnNode) in;
-								if (min.cst instanceof Number
-										&& Math.abs(Math.abs(((Number) min.cst).floatValue()) - 0.09375F) < 0.001F) {
-									boolean isNegative = ((Number) min.cst).floatValue() < 0;
-
-									it.set(new VarInsnNode(
-											Opcodes.ALOAD, 1
-									));
-									it.add(new MethodInsnNode(
-											Opcodes.INVOKESTATIC,
-											"pl/asie/stackup/StackUpHelpers",
-											isNegative ? "getItemRenderDistanceNeg" : "getItemRenderDistance",
-											"(Lnet/minecraft/entity/item/EntityItem;)F",
-											false
-									));
-									System.out.println("Patched item render distance constant in RenderEntityItem!");
-								}
-							}
-						}
-					}
-				}
+				RenderEntityItemPatch.patchDistanceConstant(node);
 			});
 		} else if ("net.minecraft.inventory.InventoryHelper".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.stackup.splices.InventoryHelperPerformancePatch",
+				spliceClasses(node, "pl.asie.stackup.core.InventoryHelperPerformanceSplice",
 						"spawnItemStack", "func_180173_a");
 			});
 		} else if ("net.minecraft.util.ServerRecipeBookHelper".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				patchMaxLimit(node, "func_194324_a");
-			});
+			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("func_194324_a"));
 		} else if ("net.minecraft.network.PacketBuffer".equals(transformedName)) {
 			consumer = consumer.andThen((node) -> {
-				spliceClasses(node, "pl.asie.stackup.splices.PacketBufferWriters",
+				spliceClasses(node, "pl.asie.stackup.core.PacketBufferWriterSplice",
 						"readItemStack", "func_150791_c",
 						"writeItemStack", "func_150788_a");
 			});
 		} else if ("net.minecraft.client.renderer.RenderItem".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				for (MethodNode mn : node.methods) {
-					if ("renderItemOverlayIntoGUI".equals(mn.name)
-							|| "func_180453_a".equals(mn.name)) {
-						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-						while (it.hasNext()) {
-							AbstractInsnNode in = it.next();
-							//     INVOKEVIRTUAL net/minecraft/client/gui/FontRenderer.drawStringWithShadow (Ljava/lang/String;FFI)I
-							if (in.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-								MethodInsnNode min = (MethodInsnNode) in;
-								if (min.owner.equals("net/minecraft/client/gui/FontRenderer")
-										&& min.desc.equals("(Ljava/lang/String;FFI)I")) {
-									it.set(new MethodInsnNode(
-											Opcodes.INVOKESTATIC,
-											"pl/asie/stackup/StackUpHelpers",
-											"drawItemCountWithShadow",
-											"(Lnet/minecraft/client/gui/FontRenderer;Ljava/lang/String;FFI)I",
-											false
-									));
-									System.out.println("Patched item count render in RenderItem!");
-									break;
-								}
-							}
-						}
-					}
-				}
-			});
+			consumer = consumer.andThen(RenderItemPatch::patchDrawItemCount);
 		} else if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				for (MethodNode mn : node.methods) {
-					if ("processCreativeInventoryAction".equals(mn.name)
-							|| "func_147344_a".equals(mn.name)) {
-						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-						while (it.hasNext()) {
-							AbstractInsnNode in = it.next();
-							if (in.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-								MethodInsnNode min = (MethodInsnNode) in;
-								if (min.owner.equals("net/minecraft/item/ItemStack")
-										&& (min.name.equals("getCount") || min.name.equals("func_190916_E"))) {
-									AbstractInsnNode in2 = it.next();
-									if (in2.getOpcode() == Opcodes.BIPUSH) {
-										IntInsnNode intInsnNode = (IntInsnNode) in2;
-										if (intInsnNode.operand == 64) {
-											System.out.println("Patched processCreativeInventoryAction count check!");
-											it.set(new MethodInsnNode(
-													Opcodes.INVOKESTATIC, "pl/asie/stackup/StackUpHelpers", "getMaxStackSize", "()I", false
-											));
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			});
+			consumer = consumer.andThen(NetHandlerPlayServerPatch::patchCreativeInventory);
 		} else if ("net.minecraft.item.ItemStack".equals(transformedName)) {
-			consumer = consumer.andThen((node) -> {
-				for (MethodNode mn : node.methods) {
-					if ("<init>".equals(mn.name)) {
-						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-						while (it.hasNext()) {
-							AbstractInsnNode in = it.next();
-							if (in instanceof LdcInsnNode && "Count".equals(((LdcInsnNode) in).cst)) {
-								AbstractInsnNode in2 = it.next();
-								if (in2.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-									// :thinking:
-									boolean patched = false;
-									MethodInsnNode min2 = (MethodInsnNode) in2;
-									if (min2.name.equals("getByte")) {
-										min2.name = "getInteger";
-										patched = true;
-									} else if (min2.name.equals("func_74771_c")) {
-										min2.name = "func_74762_e";
-										patched = true;
-									}
-
-									if (patched) {
-										min2.desc = "(Ljava/lang/String;)I";
-										System.out.println("Patched ItemStack Count getter!");
-									}
-								}
-							}
-						}
-					} else if ("func_77955_b".equals(mn.name) || "writeToNBT".equals(mn.name)) {
-						ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-						while (it.hasNext()) {
-							AbstractInsnNode in = it.next();
-							if (in instanceof LdcInsnNode && "Count".equals(((LdcInsnNode) in).cst)) {
-								it.next();
-								it.next();
-								it.next();
-								AbstractInsnNode in2 = it.next();
-								if (in2.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-									// :thinking:
-									boolean patched = false;
-									MethodInsnNode min2 = (MethodInsnNode) in2;
-									if (min2.name.equals("setByte")) {
-										min2.name = "setInteger";
-										patched = true;
-									} else if (min2.name.equals("func_74774_a")) {
-										min2.name = "func_74768_a";
-										patched = true;
-									}
-
-									if (patched) {
-										min2.desc = "(Ljava/lang/String;I)V";
-										System.out.println("Patched ItemStack Count setter!");
-
-										// Remove I2B cast
-										it.previous();
-										it.previous();
-										it.remove();
-									}
-								}
-							}
-						}
-					}
-				}
-			});
+			consumer = consumer.andThen(ItemStackPatch::patchCountGetSet);
 		}
 
 		if (consumer != emptyConsumer) {
 			return processNode(basicClass, consumer);
 		} else {
 			return data;
-		}
-	}
-
-	public static void patchMaxLimit(ClassNode node, String... methods) {
-		Set<String> methodSet = Sets.newHashSet(methods);
-
-		for (MethodNode mn : node.methods) {
-			if (methodSet.contains(mn.name)) {
-				int patchesMade = 0;
-
-				ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-				while (it.hasNext()) {
-					AbstractInsnNode in = it.next();
-					if (in.getOpcode() == Opcodes.BIPUSH) {
-						IntInsnNode iin = (IntInsnNode) in;
-						if (iin.operand == 64) {
-							System.out.println("Patched max stack check in " + node.name + " -> " + mn.name + "!");
-							//    INVOKESTATIC pl/asie/stackup/StackUpHelpers.getMaxStackSize ()I
-							it.set(new MethodInsnNode(
-									Opcodes.INVOKESTATIC, "pl/asie/stackup/StackUpHelpers", "getMaxStackSize", "()I", false
-							));
-							patchesMade++;
-						}
-					}
-				}
-
-				if (patchesMade > 1) {
-					System.out.println("NOTE: Made " + patchesMade + " patches in " + node.name + " -> " + mn.name + "!");
-				}
-			}
 		}
 	}
 

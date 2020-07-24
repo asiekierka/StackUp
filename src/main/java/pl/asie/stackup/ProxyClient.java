@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -20,28 +20,32 @@
 package pl.asie.stackup;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import pl.asie.stackup.client.StackUpClientHelpers;
+import pl.asie.stackup.client.StackUpTextGenerator;
 
 public class ProxyClient extends ProxyCommon {
 	@SubscribeEvent
 	public void onTooltip(ItemTooltipEvent event) {
+		FontRenderer renderer = event.getItemStack().getItem().getFontRenderer(event.getItemStack());
+		if (renderer == null) {
+			renderer = Minecraft.getMinecraft().fontRenderer;
+			if (renderer == null) {
+				return;
+			}
+		}
 		String count = Integer.toString(event.getItemStack().getCount());
-		String countA = StackUp.abbreviate(count);
-		//noinspection StringEquality
-		if (count != countA) {
+		StackUpTextGenerator.AbbreviationResult countA = StackUpTextGenerator.abbreviate(renderer, count, StackUpClientHelpers.SLOT_MAX_WIDTH, true);
+		if (countA.isAbbreviated()) {
 			event.getToolTip().add("x " + count);
 		}
 	}
 
 	@Override
-	public int getScaleFactor() {
+	public int getCurrentScaleFactor() {
 		return new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
-	}
-
-	@Override
-	public boolean forceSmallTooltip() {
-		return getScaleFactor() <= 1 || super.forceSmallTooltip();
 	}
 }

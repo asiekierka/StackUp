@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -17,21 +17,22 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup.splices;
+package pl.asie.stackup.core;
 
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.ItemStack;
 import pl.asie.stackup.StackUpHelpers;
+import pl.asie.stackup.client.StackUpClientHelpers;
 
-public class RenderEntityItemPatch extends RenderEntityItem {
-	public RenderEntityItemPatch(RenderManager renderManagerIn, RenderItem p_i46167_2_) {
+public class RenderEntityItemSplice extends RenderEntityItem {
+	public RenderEntityItemSplice(RenderManager renderManagerIn, RenderItem p_i46167_2_) {
 		super(renderManagerIn, p_i46167_2_);
 	}
 
 	@Override
 	protected int getModelCount(ItemStack stack) {
-		return StackUpHelpers.getModelCount(stack);
+		return StackUpClientHelpers.getModelCount(stack);
 	}
 }

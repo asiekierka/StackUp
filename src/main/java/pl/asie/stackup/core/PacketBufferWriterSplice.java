@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -17,7 +17,7 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup.splices;
+package pl.asie.stackup.core;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.Item;
@@ -28,8 +28,8 @@ import pl.asie.stackup.Constants;
 
 import java.io.IOException;
 
-public class PacketBufferWriters extends PacketBuffer {
-	public PacketBufferWriters(ByteBuf wrapped) {
+public class PacketBufferWriterSplice extends PacketBuffer {
+	public PacketBufferWriterSplice(ByteBuf wrapped) {
 		super(wrapped);
 	}
 

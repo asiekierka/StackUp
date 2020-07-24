@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -32,7 +32,7 @@ public class StackUpCore implements IFMLLoadingPlugin {
 	@Override
 	public String[] getASMTransformerClass() {
 		return new String[] {
-				"pl.asie.stackup.StackUpTransformer"
+				"pl.asie.stackup.core.StackUpTransformer"
 		};
 	}
 
@@ -49,7 +49,7 @@ public class StackUpCore implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> data) {
-		StackUpCoremodGlue.coremodUp = true;
+		StackUpConfig.coremodActive = true;
 	}
 
 	@Override

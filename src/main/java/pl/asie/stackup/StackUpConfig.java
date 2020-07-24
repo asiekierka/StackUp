@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -19,7 +19,12 @@
 
 package pl.asie.stackup;
 
-public class StackUpCoremodGlue {
-	public static boolean coremodUp = false;
-	static boolean patchRefinedStorage = true;
+public class StackUpConfig {
+	public static boolean coremodActive = false;
+	public static boolean coremodPatchRefinedStorage = true;
+
+	public static boolean scriptingActive = false;
+
+	public static boolean scaleTextLinearly = false;
+	public static float lowestScaleDown = 0.0f;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Adrian Siekierka
+ * Copyright (c) 2018, 2020 Adrian Siekierka
  *
  * This file is part of StackUp.
  *
@@ -20,11 +20,7 @@
 package pl.asie.stackup;
 
 public class ProxyCommon {
-	public boolean forceSmallTooltip() {
-		return false;
-	}
-
-	public int getScaleFactor() {
+	public int getCurrentScaleFactor() {
 		return 2;
 	}
 }

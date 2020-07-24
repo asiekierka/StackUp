@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'net.minecrell.licenser'
 
-version = "0.2.3"
+version = "0.2.4"
 group = "pl.asie.stackup"
 archivesBaseName = "StackUp"
 
@@ -34,7 +34,7 @@ dependencies {
 }
 
 minecraft {
-    version = "1.12.2-14.23.4.2745"
+    version = "1.12.2-14.23.5.2847"
     runDir = "run"
     
     mappings = "snapshot_20180730"
@@ -71,9 +71,9 @@ license {
 }
 
 dependencies {
-    deobfCompile name: "chiselsandbits", version: "14.20"
-    compile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.553"
-    compile "net.darkhax.gamestages:GameStages-1.12.2:2.0.97"
+    deobfCompile name: "chiselsandbits", version: "14.33"
+    compile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.585"
+    compile "net.darkhax.gamestages:GameStages-1.12.2:2.0.123"
 }
 
 processResources {
