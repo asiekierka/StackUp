@@ -150,9 +150,6 @@ public class StackUpTextGenerator {
 					if (scaledStrWidth <= maxWidth) {
 						return new AbbreviationResult(text, scale, true, abbreviated);
 					}
-
-					// try with lower scale factor
-					currScaleFactor--;
 				}
 			}
 
