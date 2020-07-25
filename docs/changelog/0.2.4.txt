@@ -1,0 +1,15 @@
+This release dedicated to thephoenixlodge's Heavens of Sorcery. I owe you one after the great work you did with Regrowth!
+
+Additions:
+
+* New, rewritten font renderer! Dynamic font scaling and other neaties!
+* New compatibility patches for the following mods:
+  * Actually Additions
+  * Applied Energistics 2
+  * IndustrialCraft 2
+  * Mantle (Tinkers' Construct, etc.)
+* Added option to disable StackUp's scripting system (for those of you using CraftTweaker, etc.)
+
+Bugs fixed:
+
+* Fixed the "config/stackup" directory not being created when the scripting system is enabled.

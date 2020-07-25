@@ -64,9 +64,12 @@ public final class StackUpClientHelpers {
 			return 0;
 		}
 
-		if (StackUpTextGenerator.getStringLenWithoutFmtCodes(text) <= 2) {
-			// normal vanilla size, use normal vanilla drawing
-			return fr.drawStringWithShadow(text, x, y, color);
+		if (StackUpConfig.highestScaleDown >= 1.0f) {
+			// allow vanilla fallback in this situation
+			if (StackUpTextGenerator.getStringLenWithoutFmtCodes(text) <= 2) {
+				// normal vanilla size, use normal vanilla drawing
+				return fr.drawStringWithShadow(text, x, y, color);
+			}
 		}
 
 		float xOffset = 19 - 2 - fr.getStringWidth(text);

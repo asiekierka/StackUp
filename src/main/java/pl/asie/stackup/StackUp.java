@@ -59,7 +59,6 @@ public class StackUp {
 	public static ProxyCommon proxy;
 	public static Logger logger;
 
-	public static boolean compatChiselsBits = true;
 	static int maxStackSize = 64;
 
 	private static File stackupScriptLocation;
@@ -79,9 +78,13 @@ public class StackUp {
 
 		StackUpConfig.coremodPatchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
 		StackUpConfig.coremodPatchMantle = config.getBoolean("mantle", "modpatches", true, "Should Mantle (Tinkers' Construct, etc.) be patched to support large stacks?");
-		compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
+		StackUpConfig.coremodPatchIc2 = config.getBoolean("industrialcraft2", "modpatches", true, "Should IndustrialCraft 2 be patched to support large stacks?");
+		StackUpConfig.coremodPatchAppliedEnergistics = config.getBoolean("appliedenergistics", "modpatches", true, "Should Actually Additions be patched to support large stacks?");
+		StackUpConfig.coremodPatchActuallyAdditions = config.getBoolean("actuallyadditions", "modpatches", true, "Should Actually Additions be patched to support large stacks?");
+		StackUpConfig.compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
 
-		StackUpConfig.lowestScaleDown = config.getFloat("fontScaleDownTo", "client", 0.0f, 0.0f, 1.0f, "Maximum amount by which StackUp is allowed to scale down the font.");
+		StackUpConfig.lowestScaleDown = config.getFloat("fontScaleMinimum", "client", 0.5f, 0.0f, 1.0f, "Lower bound of the font scale used by StackUp.");
+		StackUpConfig.highestScaleDown = config.getFloat("fontScaleMaximum", "client", 1.0f, 0.0f, 1.0f, "Upper bound of the font scale used by StackUp.");
 		StackUpConfig.scaleTextLinearly = config.getBoolean("fontScaleLinear", "client", false, "Scale text linearly as opposed to by steps. Useful with SmoothFont.");
 
 		if (config.hasChanged()) {
@@ -89,6 +92,11 @@ public class StackUp {
 		}
 
 		stackupScriptLocation = new File(event.getModConfigurationDirectory(), "stackup");
+		if (StackUpConfig.scriptingActive && !stackupScriptLocation.exists()) {
+			//noinspection ResultOfMethodCallIgnored
+			stackupScriptLocation.mkdir();
+		}
+
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(proxy);
 

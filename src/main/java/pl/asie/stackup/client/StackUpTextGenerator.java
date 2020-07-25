@@ -131,8 +131,8 @@ public class StackUpTextGenerator {
 		if (StackUpConfig.scaleTextLinearly) {
 			float scaleFactor = ((float) maxWidth / strWidth);
 			boolean fits = true;
-			if (scaleFactor > 1.0f) {
-				scaleFactor = 1.0f;
+			if (scaleFactor > StackUpConfig.highestScaleDown) {
+				scaleFactor = StackUpConfig.highestScaleDown;
 			} else if (scaleFactor < StackUpConfig.lowestScaleDown) {
 				scaleFactor = StackUpConfig.lowestScaleDown;
 				fits = false;
@@ -142,9 +142,12 @@ public class StackUpTextGenerator {
 			// This could probably be optimized.
 			int currScaleFactor = maxScaleFactor;
 			while (currScaleFactor >= 1 && ((float) currScaleFactor / maxScaleFactor) >= StackUpConfig.lowestScaleDown) {
-				float scaledStrWidth = ((float) currScaleFactor / maxScaleFactor) * strWidth;
-				if (scaledStrWidth <= maxWidth) {
-					return new AbbreviationResult(text, ((float) currScaleFactor / maxScaleFactor), true, abbreviated);
+				float scale = ((float) currScaleFactor / maxScaleFactor);
+				if (scale <= StackUpConfig.highestScaleDown) {
+					float scaledStrWidth = scale * strWidth;
+					if (scaledStrWidth <= maxWidth) {
+						return new AbbreviationResult(text, scale, true, abbreviated);
+					}
 				}
 
 				// try with lower scale factor

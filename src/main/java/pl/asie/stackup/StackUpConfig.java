@@ -23,9 +23,14 @@ public class StackUpConfig {
 	public static boolean coremodActive = false;
 	public static boolean coremodPatchRefinedStorage = true;
 	public static boolean coremodPatchMantle = true;
+	public static boolean coremodPatchIc2 = true;
+	public static boolean coremodPatchAppliedEnergistics = true;
+	public static boolean coremodPatchActuallyAdditions = true;
 
 	public static boolean scriptingActive = false;
 
 	public static boolean scaleTextLinearly = false;
 	public static float lowestScaleDown = 0.0f;
+	public static float highestScaleDown = 1.0f;
+	public static boolean compatChiselsBits = true;
 }

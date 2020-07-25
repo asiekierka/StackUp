@@ -25,7 +25,7 @@ import mod.chiselsandbits.api.IChiselAndBitsAPI;
 import mod.chiselsandbits.api.IChiselsAndBitsAddon;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import pl.asie.stackup.StackUp;
+import pl.asie.stackup.StackUpConfig;
 import pl.asie.stackup.StackUpHelpers;
 
 import java.lang.reflect.Field;
@@ -62,7 +62,7 @@ public class ChiselsAndBitsAddonStackUp implements IChiselsAndBitsAddon {
 
 	@Override
 	public void onReadyChiselsAndBits(IChiselAndBitsAPI api) {
-		if (!StackUp.compatChiselsBits) {
+		if (!StackUpConfig.compatChiselsBits) {
 			return;
 		}
 
