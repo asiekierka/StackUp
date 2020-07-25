@@ -78,9 +78,9 @@ public class StackUpTransformer implements IClassTransformer {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("<init>"));
 		} else if (StackUpConfig.coremodPatchIc2 && "ic2.core.block.invslot.InvSlot".equals(transformedName)) {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("<init>"));
-		} else if (StackUpConfig.coremodPatchAppliedEnergistics && "appeng.tile.inventory.AppEngInternalInventory".equals(transformedName)) {
+		} else if (StackUpConfig.coremodPatchAppliedEnergistics2 && "appeng.tile.inventory.AppEngInternalInventory".equals(transformedName)) {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("<init>"));
-		} else if (StackUpConfig.coremodPatchAppliedEnergistics && "appeng.tile.inventory.AppEngInternalAEInventory".equals(transformedName)) {
+		} else if (StackUpConfig.coremodPatchAppliedEnergistics2 && "appeng.tile.inventory.AppEngInternalAEInventory".equals(transformedName)) {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("<init>"));
 		} else if (StackUpConfig.coremodPatchActuallyAdditions && "de.ellpeck.actuallyadditions.mod.tile.TileEntityInventoryBase".equals(transformedName)) {
 			consumer = consumer.andThen(MaxStackConstantPatch.patchMaxLimit("getMaxStackSize"));

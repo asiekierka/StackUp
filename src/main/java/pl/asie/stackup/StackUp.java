@@ -30,6 +30,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -41,6 +42,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import pl.asie.stackup.config.ConfigUtils;
 import pl.asie.stackup.script.*;
 
 import java.io.File;
@@ -50,7 +52,8 @@ import java.util.Objects;
 		modid = "stackup",
 		name = "StackUp",
 		version = StackUp.VERSION,
-		dependencies = "before:refinedstorage"
+		dependencies = "before:refinedstorage;before:mantle;before:ic2;before:appliedenergistics2;before:actuallyadditions",
+		guiFactory = "pl.asie.stackup.config.ConfigGuiFactory"
 )
 public class StackUp {
 	static final String VERSION = "@VERSION@";
@@ -62,34 +65,54 @@ public class StackUp {
 	static int maxStackSize = 64;
 
 	private static File stackupScriptLocation;
-	private static boolean hadPostInit = false;
+	private static Configuration config;
+	private boolean hadPostInit;
 
-	@Mod.EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		if (!StackUpConfig.coremodActive) {
-			throw new RuntimeException("Coremod not present!");
+	public static Configuration getConfig() {
+		return config;
+	}
+
+	private void handleConfigChanged(boolean runtime) {
+		if (!runtime) {
+			StackUpConfig.scriptingActive = ConfigUtils.getBoolean(config, "general", "enableScripting", true, "Enable StackUp's own rules/scripting format.", true);
+			maxStackSize = ConfigUtils.getInt(config, "general", "maxStackSize", 64, 64, 999999999, "The maximum stack size for new stacks.", true);
+
+			StackUpConfig.coremodPatchRefinedStorage = ConfigUtils.getBoolean(config, "modpatches", "refinedstorage", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).", true);
+			StackUpConfig.coremodPatchMantle = ConfigUtils.getBoolean(config, "modpatches", "mantle", true, "Should Mantle (Tinkers' Construct, etc.) be patched to support large stacks?", true);
+			StackUpConfig.coremodPatchIc2 = ConfigUtils.getBoolean(config, "modpatches", "industrialcraft2", true, "Should IndustrialCraft 2 be patched to support large stacks?", true);
+			StackUpConfig.coremodPatchAppliedEnergistics2 = ConfigUtils.getBoolean(config, "modpatches", "appliedenergistics2", true, "Should Actually Additions be patched to support large stacks?", true);
+			StackUpConfig.coremodPatchActuallyAdditions = ConfigUtils.getBoolean(config, "modpatches", "actuallyadditions", true, "Should Actually Additions be patched to support large stacks?", true);
+			StackUpConfig.compatChiselsBits = ConfigUtils.getBoolean(config, "modpatches", "chiselsandbits", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?", true);
 		}
 
-		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-		logger = LogManager.getLogger();
+		StackUpConfig.lowestScaleDown = ConfigUtils.getFloat(config, "client", "fontScaleMinimum", 0.6f, 0.0f, 1.0f, "Lower bound of the font scale used by StackUp.", false);
+		StackUpConfig.highestScaleDown = ConfigUtils.getFloat(config, "client", "fontScaleMaximum", 0.6f, 0.0f, 1.0f, "Upper bound of the font scale used by StackUp.", false);
+		StackUpConfig.scaleTextLinearly = ConfigUtils.getBoolean(config, "client", "fontScaleLinear", false, "Scale text linearly as opposed to by steps. Useful with SmoothFont.", false);
 
-		StackUpConfig.scriptingActive = config.getBoolean("enableScripting", "general", true, "Enable StackUp's own rules/scripting format.");
-		maxStackSize = config.getInt("maxStackSize", "general", 64, 64, 999999999, "The maximum stack size for new stacks.");
-
-		StackUpConfig.coremodPatchRefinedStorage = config.getBoolean("refinedstorage", "modpatches", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).");
-		StackUpConfig.coremodPatchMantle = config.getBoolean("mantle", "modpatches", true, "Should Mantle (Tinkers' Construct, etc.) be patched to support large stacks?");
-		StackUpConfig.coremodPatchIc2 = config.getBoolean("industrialcraft2", "modpatches", true, "Should IndustrialCraft 2 be patched to support large stacks?");
-		StackUpConfig.coremodPatchAppliedEnergistics = config.getBoolean("appliedenergistics", "modpatches", true, "Should Actually Additions be patched to support large stacks?");
-		StackUpConfig.coremodPatchActuallyAdditions = config.getBoolean("actuallyadditions", "modpatches", true, "Should Actually Additions be patched to support large stacks?");
-		StackUpConfig.compatChiselsBits = config.getBoolean("chiselsandbits", "modpatches", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?");
-
-		StackUpConfig.lowestScaleDown = config.getFloat("fontScaleMinimum", "client", 0.5f, 0.0f, 1.0f, "Lower bound of the font scale used by StackUp.");
-		StackUpConfig.highestScaleDown = config.getFloat("fontScaleMaximum", "client", 1.0f, 0.0f, 1.0f, "Upper bound of the font scale used by StackUp.");
-		StackUpConfig.scaleTextLinearly = config.getBoolean("fontScaleLinear", "client", false, "Scale text linearly as opposed to by steps. Useful with SmoothFont.");
+		StackUpConfig.equalScaleDown = Math.abs(StackUpConfig.lowestScaleDown - StackUpConfig.highestScaleDown) <= 0.001f;
 
 		if (config.hasChanged()) {
 			config.save();
 		}
+	}
+
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+		if ("stackup".equals(event.getModID())) {
+			handleConfigChanged(true);
+		}
+	}
+
+	@Mod.EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		if (!StackUpConfig.coremodActive) {
+			throw new RuntimeException("Cannot load StackUp - coremod not present!");
+		}
+
+		logger = LogManager.getLogger();
+
+		config = new Configuration(event.getSuggestedConfigurationFile());
+		handleConfigChanged(false);
 
 		stackupScriptLocation = new File(event.getModConfigurationDirectory(), "stackup");
 		if (StackUpConfig.scriptingActive && !stackupScriptLocation.exists()) {
@@ -126,7 +149,7 @@ public class StackUp {
 		}
 	}
 
-	private static TObjectIntMap<Item> oldStackValues = new TObjectIntHashMap<>();
+	private static final TObjectIntMap<Item> oldStackValues = new TObjectIntHashMap<>();
 
 	public static void backupStackSize(Item i) {
 		if (!oldStackValues.containsKey(i)) {

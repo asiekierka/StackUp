@@ -8,7 +8,8 @@ Additions:
   * Applied Energistics 2
   * IndustrialCraft 2
   * Mantle (Tinkers' Construct, etc.)
-* Added option to disable StackUp's scripting system (for those of you using CraftTweaker, etc.)
+* Added option to disable StackUp's scripting system (for those of you using CraftTweaker, etc.).
+* Added an in-game config GUI.
 
 Bugs fixed:
 

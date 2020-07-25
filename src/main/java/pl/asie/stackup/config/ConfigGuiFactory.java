@@ -17,21 +17,32 @@
  * along with StackUp.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.asie.stackup;
+package pl.asie.stackup.config;
 
-public class StackUpConfig {
-	public static boolean coremodActive = false;
-	public static boolean coremodPatchRefinedStorage = true;
-	public static boolean coremodPatchMantle = true;
-	public static boolean coremodPatchIc2 = true;
-	public static boolean coremodPatchAppliedEnergistics2 = true;
-	public static boolean coremodPatchActuallyAdditions = true;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.fml.client.IModGuiFactory;
 
-	public static boolean scriptingActive = false;
+import java.util.Set;
 
-	public static boolean scaleTextLinearly = false;
-	public static float lowestScaleDown = 0.0f;
-	public static float highestScaleDown = 1.0f;
-	public static boolean equalScaleDown = false;
-	public static boolean compatChiselsBits = true;
+public class ConfigGuiFactory implements IModGuiFactory {
+	@Override
+	public void initialize(Minecraft minecraftInstance) {
+
+	}
+
+	@Override
+	public boolean hasConfigGui() {
+		return true;
+	}
+
+	@Override
+	public GuiScreen createConfigGui(GuiScreen parentScreen) {
+		return new ConfigGui(parentScreen);
+	}
+
+	@Override
+	public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
+		return null;
+	}
 }

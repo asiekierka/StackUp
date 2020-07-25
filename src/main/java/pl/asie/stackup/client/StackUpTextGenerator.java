@@ -21,6 +21,7 @@ package pl.asie.stackup.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.math.MathHelper;
 import pl.asie.stackup.StackUp;
 import pl.asie.stackup.StackUpConfig;
 import pl.asie.stackup.StackUpHelpers;
@@ -139,22 +140,25 @@ public class StackUpTextGenerator {
 			}
 			return new AbbreviationResult(text, scaleFactor, fits, abbreviated);
 		} else {
-			// This could probably be optimized.
-			int currScaleFactor = maxScaleFactor;
-			while (currScaleFactor >= 1 && ((float) currScaleFactor / maxScaleFactor) >= StackUpConfig.lowestScaleDown) {
-				float scale = ((float) currScaleFactor / maxScaleFactor);
-				if (scale <= StackUpConfig.highestScaleDown) {
+			int cfgMinScaleFactor = MathHelper.clamp(Math.round(StackUpConfig.lowestScaleDown * maxScaleFactor), 1, maxScaleFactor);
+			int cfgMaxScaleFactor = MathHelper.clamp(Math.round(StackUpConfig.highestScaleDown * maxScaleFactor), 1, maxScaleFactor);
+
+			if (cfgMinScaleFactor != cfgMaxScaleFactor) {
+				for (int currScaleFactor = cfgMaxScaleFactor; currScaleFactor >= cfgMinScaleFactor; currScaleFactor--) {
+					float scale = ((float) currScaleFactor / maxScaleFactor);
 					float scaledStrWidth = scale * strWidth;
 					if (scaledStrWidth <= maxWidth) {
 						return new AbbreviationResult(text, scale, true, abbreviated);
 					}
-				}
 
-				// try with lower scale factor
-				currScaleFactor--;
+					// try with lower scale factor
+					currScaleFactor--;
+				}
 			}
 
-			return new AbbreviationResult(text, ((float) currScaleFactor / maxScaleFactor), false, abbreviated);
+			float scale = ((float) cfgMinScaleFactor / maxScaleFactor);
+			float scaledStrWidth = scale * strWidth;
+			return new AbbreviationResult(text, ((float) cfgMinScaleFactor / maxScaleFactor), scaledStrWidth <= maxWidth, abbreviated);
 		}
 	}
 
