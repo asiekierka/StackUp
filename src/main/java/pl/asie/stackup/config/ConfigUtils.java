@@ -47,7 +47,7 @@ public final class ConfigUtils {
 		Property prop = config.get(category, name, defaultValue);
 		prop.setComment(comment);
 		prop.setRequiresMcRestart(requiresRestart);
-		prop.setLanguageKey("config.stackup." + name + ".name");
+		prop.setLanguageKey("config.stackup." + category + "." + name + ".name");
 		return prop.getString();
 	}
 
@@ -56,7 +56,7 @@ public final class ConfigUtils {
 		Property prop = config.get(category, name, defaultValue);
 		prop.setComment(comment);
 		prop.setRequiresMcRestart(requiresRestart);
-		prop.setLanguageKey("config.stackup." + name + ".name");
+		prop.setLanguageKey("config.stackup." + category + "." + name + ".name");
 		return prop.getStringList();
 	}
 
@@ -67,7 +67,7 @@ public final class ConfigUtils {
 		prop.setMaxValue(maxValue);
 		prop.setComment(comment);
 		prop.setRequiresMcRestart(requiresRestart);
-		prop.setLanguageKey("config.stackup." + name + ".name");
+		prop.setLanguageKey("config.stackup." + category + "." + name + ".name");
 		return prop.getInt();
 	}
 
@@ -82,7 +82,7 @@ public final class ConfigUtils {
 		prop.setMaxValue(maxValue);
 		prop.setComment(comment);
 		prop.setRequiresMcRestart(requiresRestart);
-		prop.setLanguageKey("config.stackup." + name + ".name");
+		prop.setLanguageKey("config.stackup." + category + "." + name + ".name");
 		return prop.getDouble();
 	}
 }
