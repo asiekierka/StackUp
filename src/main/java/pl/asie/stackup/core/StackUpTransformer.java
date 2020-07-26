@@ -107,6 +107,10 @@ public class StackUpTransformer implements IClassTransformer {
 			consumer = consumer.andThen(RenderItemPatch::patchDrawItemCount);
 		} else if ("net.minecraft.network.NetHandlerPlayServer".equals(transformedName)) {
 			consumer = consumer.andThen(NetHandlerPlayServerPatch::patchCreativeInventory);
+		} else if ("net.minecraftforge.common.util.PacketUtil".equals(transformedName)) {
+			consumer = consumer.andThen((node) -> {
+				spliceClasses(node, "pl.asie.stackup.core.PacketUtilWriterSplice", "writeItemStackFromClientToServer");
+			});
 		} else if ("net.minecraft.item.ItemStack".equals(transformedName)) {
 			consumer = consumer.andThen(ItemStackPatch::patchCountGetSet);
 		}

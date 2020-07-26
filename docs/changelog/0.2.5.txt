@@ -1,0 +1,5 @@
+This release dedicated to thephoenixlodge's Heavens of Sorcery. I owe you one after the great work you did with Regrowth!
+
+Bugs fixed:
+
+* Crash when holding exactly 214 stacks in creative mode.
