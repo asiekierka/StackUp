@@ -80,7 +80,7 @@ public class StackUp {
 			StackUpConfig.coremodPatchRefinedStorage = ConfigUtils.getBoolean(config, "modpatches", "refinedstorage", true, "Should Refined Storage be patched to support large stacks? (GUI extraction only; works fine otherwise).", true);
 			StackUpConfig.coremodPatchMantle = ConfigUtils.getBoolean(config, "modpatches", "mantle", true, "Should Mantle (Tinkers' Construct, etc.) be patched to support large stacks?", true);
 			StackUpConfig.coremodPatchIc2 = ConfigUtils.getBoolean(config, "modpatches", "industrialcraft2", true, "Should IndustrialCraft 2 be patched to support large stacks?", true);
-			StackUpConfig.coremodPatchAppliedEnergistics2 = ConfigUtils.getBoolean(config, "modpatches", "appliedenergistics2", true, "Should Actually Additions be patched to support large stacks?", true);
+			StackUpConfig.coremodPatchAppliedEnergistics2 = ConfigUtils.getBoolean(config, "modpatches", "appliedenergistics2", true, "Should Applied Energistics 2 be patched to support large stacks?", true);
 			StackUpConfig.coremodPatchActuallyAdditions = ConfigUtils.getBoolean(config, "modpatches", "actuallyadditions", true, "Should Actually Additions be patched to support large stacks?", true);
 			StackUpConfig.compatChiselsBits = ConfigUtils.getBoolean(config, "modpatches", "chiselsandbits", true, "Should Chisels & Bits bits automatically be adjusted by the mod to match the bit bag's stacking size?", true);
 		}
